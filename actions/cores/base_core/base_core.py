@@ -3,6 +3,7 @@
 from typing import List
 
 from GtkHelper.GenerativeUI.ComboRow import ComboRow
+from GtkHelper.GenerativeUI.EntryRow import EntryRow
 from HomeAssistantPlugin.actions import const
 from src.backend.PluginManager.ActionCore import ActionCore
 
@@ -61,6 +62,8 @@ class BaseCore(ActionCore):
 
     def _create_ui_elements(self) -> None:
         """Get all entity rows."""
+        self._all_entities: List[str] = []
+
         self.domain_combo: ComboRow = ComboRow(
             self, const.SETTING_ENTITY_DOMAIN, const.EMPTY_STRING, [],
             const.LABEL_ENTITY_DOMAIN, enable_search=True,
@@ -68,9 +71,16 @@ class BaseCore(ActionCore):
             complex_var_name=True
         )
 
+        self.entity_search_entry: EntryRow = EntryRow(
+            self, const.SETTING_ENTITY_SEARCH, const.EMPTY_STRING,
+            const.LABEL_ENTITY_SEARCH,
+            on_change=self._on_entity_search_changed, can_reset=False,
+            auto_add=False
+        )
+
         self.entity_combo: ComboRow = ComboRow(
             self, const.SETTING_ENTITY_ENTITY, const.EMPTY_STRING, [],
-            const.LABEL_ENTITY_ENTITY, enable_search=True,
+            const.LABEL_ENTITY_ENTITY, enable_search=False,
             on_change=self._on_change_entity, can_reset=False,
             complex_var_name=True
         )
@@ -93,6 +103,7 @@ class BaseCore(ActionCore):
                 self.plugin_base.backend.remove_tracked_entity(entity, self.refresh)
             self.settings.reset(domain)
             self.entity_combo.remove_all_items()
+            self.entity_search_entry.set_ui_value(const.EMPTY_STRING)
 
         if domain:
             self._load_entities()
@@ -153,8 +164,26 @@ class BaseCore(ActionCore):
             entities.append(entity)
         entities = [e for e in entities if e is not None]
         entities.sort()
-        if entities != self._get_current_entities():
-            self.entity_combo.populate(entities, entity, trigger_callback=False)
+        self._all_entities = entities
+        self._apply_entity_filter(self.entity_search_entry.get_text(), entity)
+
+    @requires_initialization
+    def _apply_entity_filter(self, search_text: str, entity: str = None) -> None:
+        """Filter entities by substring match and repopulate the entity combo."""
+        search_text = (search_text or "").lower()
+        if search_text:
+            filtered = [e for e in self._all_entities if search_text in e.lower()]
+        else:
+            filtered = list(self._all_entities)
+        if filtered != self._get_current_entities():
+            if entity is None:
+                entity = self.settings.get_entity()
+            self.entity_combo.populate(filtered, entity, trigger_callback=False)
+
+    @requires_initialization
+    def _on_entity_search_changed(self, _, search_text: str, __) -> None:
+        """Handle changes in the entity search field."""
+        self._apply_entity_filter(search_text)
 
     def _get_current_domains(self) -> List[str]:
         """Get the domains currently displayed in the domain combo."""

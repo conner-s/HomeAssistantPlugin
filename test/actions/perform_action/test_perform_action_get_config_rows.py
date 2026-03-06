@@ -22,6 +22,9 @@ class TestPerformActionGetConfigRows(unittest.TestCase):
         action_combo_mock = Mock()
         action_combo_mock.widget = "action"
 
+        entity_search_entry_mock = Mock()
+        entity_search_entry_mock.widget = "entity_search"
+
         entity_combo_mock = Mock()
         entity_combo_mock.widget = "entity"
 
@@ -31,6 +34,7 @@ class TestPerformActionGetConfigRows(unittest.TestCase):
         instance = PerformAction()
         instance.domain_combo = domain_combo_mock
         instance.action_combo = action_combo_mock
+        instance.entity_search_entry = entity_search_entry_mock
         instance.entity_combo = entity_combo_mock
         instance.parameters_expander = parameters_expander_mock
         result = instance.get_config_rows()
@@ -38,6 +42,7 @@ class TestPerformActionGetConfigRows(unittest.TestCase):
         self.assertEqual(result, [
             domain_combo_mock.widget,
             action_combo_mock.widget,
+            entity_search_entry_mock.widget,
             entity_combo_mock.widget,
             parameters_expander_mock.widget
         ])

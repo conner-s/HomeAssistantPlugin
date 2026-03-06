@@ -59,18 +59,22 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
         entity_combo_mock = Mock()
         entity_combo_mock.remove_all_items = remove_all_items_mock
 
+        entity_search_entry_mock = Mock()
+
         domain = "light"
 
         instance = BaseCore(Mock(), True)
         instance.initialized = True
         instance.settings = settings_mock
         instance.entity_combo = entity_combo_mock
+        instance.entity_search_entry = entity_search_entry_mock
         instance._on_change_domain(None, domain, None)
 
         settings_mock.get_entity.assert_called_once()
         instance.plugin_base.backend.remove_tracked_entity.assert_not_called()
         settings_mock.reset.assert_called_once_with(domain)
         instance.entity_combo.remove_all_items.assert_called_once()
+        entity_search_entry_mock.set_ui_value.assert_called_once_with("")
         load_entities_mock.assert_called_once()
         set_enabled_disabled_mock.assert_called_once()
 
@@ -90,18 +94,22 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
         entity_combo_mock = Mock()
         entity_combo_mock.remove_all_items = remove_all_items_mock
 
+        entity_search_entry_mock = Mock()
+
         domain = "light"
 
         instance = BaseCore(Mock(), False)
         instance.initialized = True
         instance.settings = settings_mock
         instance.entity_combo = entity_combo_mock
+        instance.entity_search_entry = entity_search_entry_mock
         instance._on_change_domain(None, domain, None)
 
         settings_mock.get_entity.assert_called_once()
         instance.plugin_base.backend.remove_tracked_entity.assert_not_called()
         settings_mock.reset.assert_called_once_with(domain)
         instance.entity_combo.remove_all_items.assert_called_once()
+        entity_search_entry_mock.set_ui_value.assert_called_once_with("")
         load_entities_mock.assert_called_once()
         set_enabled_disabled_mock.assert_called_once()
 
@@ -121,18 +129,22 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
         entity_combo_mock = Mock()
         entity_combo_mock.remove_all_items = remove_all_items_mock
 
+        entity_search_entry_mock = Mock()
+
         domain = None
 
         instance = BaseCore(Mock(), True)
         instance.initialized = True
         instance.settings = settings_mock
         instance.entity_combo = entity_combo_mock
+        instance.entity_search_entry = entity_search_entry_mock
         instance._on_change_domain(None, domain, "light")
 
         settings_mock.get_entity.assert_called_once()
         instance.plugin_base.backend.remove_tracked_entity.assert_called_once_with(entity_id, instance.refresh)
         settings_mock.reset.assert_called_once_with(domain)
         instance.entity_combo.remove_all_items.assert_called_once()
+        entity_search_entry_mock.set_ui_value.assert_called_once_with("")
         load_entities_mock.assert_not_called()
         set_enabled_disabled_mock.assert_called_once()
 
@@ -152,18 +164,22 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
         entity_combo_mock = Mock()
         entity_combo_mock.remove_all_items = remove_all_items_mock
 
+        entity_search_entry_mock = Mock()
+
         domain = "light"
 
         instance = BaseCore(Mock(), True)
         instance.initialized = True
         instance.settings = settings_mock
         instance.entity_combo = entity_combo_mock
+        instance.entity_search_entry = entity_search_entry_mock
         instance._on_change_domain(None, domain, None)
 
         settings_mock.get_entity.assert_called_once()
         instance.plugin_base.backend.remove_tracked_entity.assert_called_once_with(entity_id, instance.refresh)
         settings_mock.reset.assert_called_once_with(domain)
         instance.entity_combo.remove_all_items.assert_called_once()
+        entity_search_entry_mock.set_ui_value.assert_called_once_with("")
         load_entities_mock.assert_called_once()
         set_enabled_disabled_mock.assert_called_once()
 

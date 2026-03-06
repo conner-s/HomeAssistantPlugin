@@ -29,9 +29,16 @@ class TestBaseCoreCreateUiElements(unittest.TestCase):
                           "on_change": instance._on_change_domain, "can_reset": False,
                           "complex_var_name": True}, instance.domain_combo.kwargs)
 
+        self.assertEqual((instance, const.SETTING_ENTITY_SEARCH, const.EMPTY_STRING,
+                          const.LABEL_ENTITY_SEARCH), instance.entity_search_entry.args)
+        self.assertEqual({"on_change": instance._on_entity_search_changed, "can_reset": False,
+                          "auto_add": False}, instance.entity_search_entry.kwargs)
+
         self.assertEqual((instance, const.SETTING_ENTITY_ENTITY, const.EMPTY_STRING, [],
                           const.LABEL_ENTITY_ENTITY), instance.entity_combo.args)
-        self.assertEqual({"enable_search": True,
+        self.assertEqual({"enable_search": False,
                           "on_change": instance._on_change_entity, "can_reset": False,
                           "complex_var_name": True}, instance.entity_combo.kwargs)
+
+        self.assertEqual([], instance._all_entities)
 

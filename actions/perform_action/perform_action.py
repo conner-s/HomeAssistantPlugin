@@ -61,8 +61,8 @@ class PerformAction(BaseCore):
 
     def get_config_rows(self) -> List:
         """Get the rows to be displayed in the UI."""
-        return [self.domain_combo.widget, self.action_combo.widget, self.entity_combo.widget,
-                self.parameters_expander.widget]
+        return [self.domain_combo.widget, self.action_combo.widget, self.entity_search_entry.widget,
+                self.entity_combo.widget, self.parameters_expander.widget]
 
     def _create_ui_elements(self) -> None:
         """Get all action rows."""

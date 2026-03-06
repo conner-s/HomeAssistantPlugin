@@ -8,6 +8,9 @@ EMPTY_STRING = ""
 
 LABEL_ENTITY_DOMAIN = "actions.home_assistant.entity.domain.label"
 LABEL_ENTITY_ENTITY = "actions.home_assistant.entity.entity.label"
+LABEL_ENTITY_SEARCH = "actions.home_assistant.entity.search.label"
+
+SETTING_ENTITY_SEARCH = "entity_search_filter"
 
 LABEL_SETTINGS_ENTITY = "actions.home_assistant.settings.entity.label"
 

@@ -39,6 +39,8 @@ class TestShowIcon(unittest.TestCase):
         instance = ShowIcon.__new__(ShowIcon)
         instance.domain_combo = Mock()
         instance.domain_combo.widget = "domain_combo_widget"
+        instance.entity_search_entry = Mock()
+        instance.entity_search_entry.widget = "entity_search_entry_widget"
         instance.entity_combo = Mock()
         instance.entity_combo.widget = "entity_combo_widget"
         instance.icon = Mock()
@@ -54,6 +56,7 @@ class TestShowIcon(unittest.TestCase):
 
         expected_rows = [
             "domain_combo_widget",
+            "entity_search_entry_widget",
             "entity_combo_widget",
             "icon_widget",
             "color_widget",

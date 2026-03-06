@@ -41,6 +41,8 @@ class TestShowText(unittest.TestCase):
         instance = ShowText.__new__(ShowText)
         instance.domain_combo = Mock()
         instance.domain_combo.widget = "domain_combo_widget"
+        instance.entity_search_entry = Mock()
+        instance.entity_search_entry.widget = "entity_search_entry_widget"
         instance.entity_combo = Mock()
         instance.entity_combo.widget = "entity_combo_widget"
         instance.position = Mock()
@@ -66,6 +68,7 @@ class TestShowText(unittest.TestCase):
 
         expected = [
             "domain_combo_widget",
+            "entity_search_entry_widget",
             "entity_combo_widget",
             "position_widget",
             "attribute_widget",

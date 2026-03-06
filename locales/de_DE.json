@@ -13,6 +13,7 @@
 
     "actions.home_assistant.entity.domain.label": "Domäne:",
     "actions.home_assistant.entity.entity.label": "Entität:",
+    "actions.home_assistant.entity.search.label": "Entität suchen:",
 
     "actions.home_assistant.service.call_service.label": "Aktion ausführen:",
     "actions.home_assistant.service.service.label": "Aktion:",

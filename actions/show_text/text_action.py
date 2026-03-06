@@ -29,7 +29,8 @@ class ShowText(CustomizationCore):
 
     def get_config_rows(self) -> List:
         """Get the rows to be displayed in the UI."""
-        return [self.domain_combo.widget, self.entity_combo.widget, self.position.widget, self.attribute.widget,
+        return [self.domain_combo.widget, self.entity_search_entry.widget, self.entity_combo.widget,
+                self.position.widget, self.attribute.widget,
                 self.round.widget, self.text_size.widget, self.text_color.widget,
                 self.outline_size.widget, self.outline_color.widget, self.show_unit.widget, self.unit_line_break.widget,
                 self.customization_expander.widget]
