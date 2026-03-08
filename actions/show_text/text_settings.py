@@ -1,11 +1,9 @@
 """Module to manage action settings."""
 
-from typing import Tuple
-
-from HomeAssistantPlugin.actions.show_text.text_customization import TextCustomization
-from HomeAssistantPlugin.actions.show_text import text_const
 from HomeAssistantPlugin.actions.cores.customization_core import customization_const
 from HomeAssistantPlugin.actions.cores.customization_core.customization_settings import CustomizationSettings
+from HomeAssistantPlugin.actions.show_text import text_const
+from HomeAssistantPlugin.actions.show_text.text_customization import TextCustomization
 
 DEFAULT_SETTINGS = {
     text_const.SETTING_POSITION: text_const.DEFAULT_POSITION,
@@ -71,7 +69,7 @@ class ShowTextSettings(CustomizationSettings):
         """
         return int(self._action.get_settings()[text_const.SETTING_TEXT][text_const.SETTING_TEXT_SIZE])
 
-    def get_text_color(self) -> Tuple[int, int, int, int]:
+    def get_text_color(self) -> tuple[int, int, int, int]:
         """
         Get the text color.
         :return: the text color
@@ -85,7 +83,7 @@ class ShowTextSettings(CustomizationSettings):
         """
         return int(self._action.get_settings()[text_const.SETTING_TEXT][text_const.SETTING_OUTLINE_SIZE])
 
-    def get_outline_color(self) -> Tuple[int, int, int, int]:
+    def get_outline_color(self) -> tuple[int, int, int, int]:
         """
         Get the outline color.
         :return: the outline color

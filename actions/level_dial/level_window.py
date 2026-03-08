@@ -1,14 +1,13 @@
 """The module for the Level Dial customization window."""
 
 from functools import partial
-from typing import Callable, List
+from typing import Callable
 
 from HomeAssistantPlugin.actions import const as base_const
 from HomeAssistantPlugin.actions.cores.customization_core import customization_helper
 from HomeAssistantPlugin.actions.cores.customization_core.customization_window import CustomizationWindow
 from HomeAssistantPlugin.actions.level_dial import level_const
 from HomeAssistantPlugin.actions.level_dial.level_customization import LevelDialCustomization
-
 # Reuse the MDI icon list from the shared asset
 from HomeAssistantPlugin.actions.show_icon import icon_helper
 
@@ -16,11 +15,11 @@ from HomeAssistantPlugin.actions.show_icon import icon_helper
 class LevelDialWindow(CustomizationWindow):
     """Window to customize level dial icon and color."""
 
-    def __init__(self, lm, attributes: List, callback: Callable,
+    def __init__(self, lm, attributes: list, callback: Callable,
                  current: LevelDialCustomization = None, index: int = None):
         super().__init__(lm, attributes, callback, current, index)
 
-        self.icons: List[str] = list(icon_helper.MDI_ICONS)
+        self.icons: list[str] = list(icon_helper.MDI_ICONS)
 
         self.set_title(lm.get(level_const.CUSTOMIZATION_WINDOW_TITLE))
 

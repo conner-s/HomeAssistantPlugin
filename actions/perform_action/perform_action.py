@@ -4,16 +4,16 @@ The module for the Home Assistant action that is loaded in StreamController.
 
 import json
 from json import JSONDecodeError
-from typing import List
 
 from GtkHelper.GenerativeUI.ComboRow import ComboRow
 from GtkHelper.GenerativeUI.ExpanderRow import ExpanderRow
-from src.backend.DeckManagement.InputIdentifier import Input
-from src.backend.PluginManager.EventAssigner import EventAssigner
+from HomeAssistantPlugin.actions.cores.base_core.base_core import BaseCore, requires_initialization, \
+    _set_substring_search
 from HomeAssistantPlugin.actions.perform_action import perform_const
 from HomeAssistantPlugin.actions.perform_action.parameters import parameters_helper
 from HomeAssistantPlugin.actions.perform_action.perform_settings import PerformActionSettings
-from HomeAssistantPlugin.actions.cores.base_core.base_core import BaseCore, requires_initialization, _set_substring_search
+from src.backend.DeckManagement.InputIdentifier import Input
+from src.backend.PluginManager.EventAssigner import EventAssigner
 
 
 class PerformAction(BaseCore):
@@ -59,7 +59,7 @@ class PerformAction(BaseCore):
             callback=self._perform_action
         ))
 
-    def get_config_rows(self) -> List:
+    def get_config_rows(self) -> list:
         """Get the rows to be displayed in the UI."""
         return [self.domain_combo.widget, self.action_combo.widget, self.entity_combo.widget,
                 self.parameters_expander.widget]
@@ -170,6 +170,6 @@ class PerformAction(BaseCore):
             self.entity_combo.widget.set_sensitive(has_target)
 
     @requires_initialization
-    def _get_domains(self) -> List[str]:
+    def _get_domains(self) -> list[str]:
         """This class needs all domains that provide actions in Home Assistant."""
         return self.plugin_base.backend.get_domains_for_actions()

@@ -3,7 +3,7 @@ The module for the Home Assistant customization icon window.
 """
 
 from functools import partial
-from typing import Callable, List
+from typing import Callable
 
 from HomeAssistantPlugin.actions import const as base_const
 from HomeAssistantPlugin.actions.cores.customization_core import customization_helper
@@ -17,11 +17,11 @@ class IconWindow(CustomizationWindow):
     Window to customize icons.
     """
 
-    def __init__(self, lm, attributes: List, callback: Callable,
+    def __init__(self, lm, attributes: list, callback: Callable,
                  current: IconCustomization = None, index: int = None):
         super().__init__(lm, attributes, callback, current, index)
 
-        self.icons: List[str] = list(icon_helper.MDI_ICONS)
+        self.icons: list[str] = list(icon_helper.MDI_ICONS)
 
         self.set_title(lm.get(icon_const.CUSTOMIZATION_WINDOW_TITLE))
 

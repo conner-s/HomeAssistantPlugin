@@ -2,7 +2,6 @@
 The module for the Home Assistant action that is loaded in StreamController.
 """
 from collections import Counter
-from typing import List
 
 from GtkHelper.GenerativeUI.ColorButtonRow import ColorButtonRow
 from GtkHelper.GenerativeUI.ComboRow import ComboRow
@@ -25,9 +24,10 @@ class ShowText(CustomizationCore):
 
     def __init__(self, *args, **kwargs):
         super().__init__(window_implementation=TextWindow, customization_implementation=TextCustomization,
-                         row_implementation=TextRow, settings_implementation=ShowTextSettings, track_entity=True, *args, **kwargs)
+                         row_implementation=TextRow, settings_implementation=ShowTextSettings, track_entity=True, *args,
+                         **kwargs)
 
-    def get_config_rows(self) -> List:
+    def get_config_rows(self) -> list:
         """Get the rows to be displayed in the UI."""
         return [self.domain_combo.widget, self.entity_combo.widget, self.position.widget, self.attribute.widget,
                 self.round.widget, self.text_size.widget, self.text_color.widget,
@@ -220,7 +220,7 @@ class ShowText(CustomizationCore):
         if Counter(attributes) != Counter(self._get_current_attributes()):
             self.attribute.populate(attributes, attribute, trigger_callback=False)
 
-    def _get_current_attributes(self) -> List[str]:
+    def _get_current_attributes(self) -> list[str]:
         """
         Gets the list of attributes set on the Combo as strings.
         :return: the list of attributes set on the Combo as strings
@@ -272,6 +272,6 @@ class ShowText(CustomizationCore):
         self._load_customizations()
         self._set_enabled_disabled()
 
-    def _get_domains(self) -> List[str]:
+    def _get_domains(self) -> list[str]:
         """This class needs all domains that provide actions in Home Assistant."""
         return self.plugin_base.backend.get_domains_for_entities()

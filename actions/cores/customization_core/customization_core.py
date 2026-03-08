@@ -1,9 +1,7 @@
 """The module for the Home Assistant action that is loaded in StreamController."""
 from copy import deepcopy
-from typing import List
 
 import gi
-
 
 gi.require_version("Gtk", "4.0")
 from gi.repository.Gtk import Button, Align
@@ -122,7 +120,7 @@ class CustomizationCore(BaseCore):
                 len(self.settings.get_customizations()) > 0
             )
 
-    def _get_attributes(self) -> List[str]:
+    def _get_attributes(self) -> list[str]:
         """
         Gets the list of attributes for the selected entity.
         :return: the list of attributes

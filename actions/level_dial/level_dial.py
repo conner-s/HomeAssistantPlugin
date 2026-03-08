@@ -4,7 +4,6 @@ import json
 import os
 import threading
 from io import BytesIO
-from typing import Dict, List, Tuple
 
 # Available in the StreamController flatpak runtime; graceful fallback for unit tests
 try:
@@ -15,6 +14,7 @@ except ImportError:
     cairosvg = None
     Image = None
     import logging
+
     log = logging.getLogger(__name__)
 
 from GtkHelper.GenerativeUI.EntryRow import EntryRow
@@ -33,10 +33,9 @@ from HomeAssistantPlugin.actions.level_dial.level_window import LevelDialWindow
 # Load MDI icons once at import time
 _MDI_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "assets", "mdi-svg.json")
 with open(_MDI_PATH, "r", encoding="utf-8") as _f:
-    _MDI_ICONS: Dict[str, str] = json.load(_f)
+    _MDI_ICONS: dict[str, str] = json.load(_f)
 
-
-_ICON_CACHE: Dict = {}
+_ICON_CACHE: dict = {}
 
 
 def _get_icon_image(icon_name: str, color_hex: str, opacity: float = 1.0):
@@ -74,8 +73,8 @@ def _get_entity_icon(state: dict, fallback: str) -> str:
     return icon if icon else fallback
 
 
-def _evaluate_customizations(state: dict, customizations: List[LevelDialCustomization],
-                             default_icon: str, default_color: str) -> Tuple[str, str]:
+def _evaluate_customizations(state: dict, customizations: list[LevelDialCustomization],
+                             default_icon: str, default_color: str) -> tuple[str, str]:
     """Evaluate customization rules against current state, returning (icon_name, color_hex)."""
     icon_name = default_icon
     color_hex = default_color
@@ -208,7 +207,7 @@ class LevelDial(CustomizationCore):
         super().on_ready()
         self._reload()
 
-    def get_config_rows(self) -> List:
+    def get_config_rows(self) -> list:
         return [
             self.domain_combo.widget,
             self.entity_combo.widget,
@@ -458,6 +457,6 @@ class LevelDial(CustomizationCore):
             self.batch_delay_scale.widget.set_subtitle(level_const.EMPTY_STRING)
 
     @requires_initialization
-    def _get_domains(self) -> List[str]:
+    def _get_domains(self) -> list[str]:
         available = set(self.plugin_base.backend.get_domains_for_entities())
         return [d for d in level_const.DOMAIN_CONFIGS if d in available]

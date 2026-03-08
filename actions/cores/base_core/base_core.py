@@ -1,22 +1,16 @@
 """The module for the Home Assistant action that is loaded in StreamController."""
 
-from typing import List
-
 from GtkHelper.GenerativeUI.ComboRow import ComboRow
 from HomeAssistantPlugin.actions import const
+from gi.repository import Gtk
 from src.backend.PluginManager.ActionCore import ActionCore
-
-try:
-    from gi.repository import Gtk
-except (ImportError, ValueError):
-    Gtk = None
 
 
 def _set_substring_search(combo_row: ComboRow) -> None:
     """Enable substring search mode on a ComboRow if supported by the installed libadwaita version."""
     try:
         widget = combo_row.widget
-        if Gtk is not None and hasattr(widget, "set_search_match_mode"):
+        if hasattr(widget, "set_search_match_mode"):
             widget.set_search_match_mode(Gtk.StringFilterMatchMode.SUBSTRING)
     except AttributeError:
         pass
@@ -27,6 +21,7 @@ def requires_initialization(func):
         if not getattr(self, 'initialized', False):
             return None
         return func(self, *args, **kwargs)
+
     return wrapper
 
 
@@ -70,7 +65,7 @@ class BaseCore(ActionCore):
             )
         self.refresh()
 
-    def get_config_rows(self) -> List:
+    def get_config_rows(self) -> list:
         """Get the rows to be displayed in the UI."""
         raise NotImplementedError("Must be implemented by subclasses.")
 
@@ -173,14 +168,14 @@ class BaseCore(ActionCore):
         if entities != self._get_current_entities():
             self.entity_combo.populate(entities, entity, trigger_callback=False)
 
-    def _get_current_domains(self) -> List[str]:
+    def _get_current_domains(self) -> list[str]:
         """Get the domains currently displayed in the domain combo."""
         return [
             str(self.domain_combo.get_item_at(i))
             for i in range(self.domain_combo.get_item_amount())
         ]
 
-    def _get_current_entities(self) -> List[str]:
+    def _get_current_entities(self) -> list[str]:
         """Get the entities currently displayed in the entity combo."""
         return [
             str(self.entity_combo.get_item_at(i))
@@ -194,7 +189,7 @@ class BaseCore(ActionCore):
         is_domain_set = bool(domain)
         self.entity_combo.set_sensitive(is_domain_set)
 
-    def _get_domains(self) -> List[str]:
+    def _get_domains(self) -> list[str]:
         """Get the domains available in Home Assistant."""
         raise NotImplementedError("Must be implemented by subclasses.")
 

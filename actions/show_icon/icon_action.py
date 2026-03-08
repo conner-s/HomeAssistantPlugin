@@ -2,8 +2,6 @@
 The module for the Home Assistant action that is loaded in StreamController.
 """
 
-from typing import List
-
 from GtkHelper.GenerativeUI.ColorButtonRow import ColorButtonRow
 from GtkHelper.GenerativeUI.EntryRow import EntryRow
 from GtkHelper.GenerativeUI.ScaleRow import ScaleRow
@@ -12,8 +10,8 @@ from HomeAssistantPlugin.actions.cores.customization_core.customization_core imp
 from HomeAssistantPlugin.actions.show_icon import icon_const, icon_helper
 from HomeAssistantPlugin.actions.show_icon.icon_customization import IconCustomization
 from HomeAssistantPlugin.actions.show_icon.icon_row import IconRow
-from HomeAssistantPlugin.actions.show_icon.icon_window import IconWindow
 from HomeAssistantPlugin.actions.show_icon.icon_settings import ShowIconSettings
+from HomeAssistantPlugin.actions.show_icon.icon_window import IconWindow
 
 
 class ShowIcon(CustomizationCore):
@@ -21,9 +19,10 @@ class ShowIcon(CustomizationCore):
 
     def __init__(self, *args, **kwargs):
         super().__init__(window_implementation=IconWindow, customization_implementation=IconCustomization,
-                         row_implementation=IconRow, settings_implementation=ShowIconSettings, track_entity=True, *args, **kwargs)
+                         row_implementation=IconRow, settings_implementation=ShowIconSettings, track_entity=True, *args,
+                         **kwargs)
 
-    def get_config_rows(self) -> List:
+    def get_config_rows(self) -> list:
         """Get the rows to be displayed in the UI."""
         return [self.domain_combo.widget, self.entity_combo.widget, self.icon.widget, self.color.widget,
                 self.scale.widget, self.opacity.widget, self.customization_expander.widget]
@@ -118,6 +117,6 @@ class ShowIcon(CustomizationCore):
         self._load_customizations()
         self._set_enabled_disabled()
 
-    def _get_domains(self) -> List[str]:
+    def _get_domains(self) -> list[str]:
         """This class needs all domains that provide actions in Home Assistant."""
         return self.plugin_base.backend.get_domains_for_entities()

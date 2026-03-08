@@ -2,7 +2,7 @@
 The module for the Home Assistant customization window.
 """
 from functools import partial
-from typing import Callable, List
+from typing import Callable
 
 import gi
 from gi.repository import GObject
@@ -11,7 +11,8 @@ from gi.repository.Gio import ListStore
 
 gi.require_version("Gtk", "4.0")
 from gi.repository.Gtk import Align, Box, Button, CssProvider, Entry, \
-    Grid, Label, Window, CheckButton, Scale, Orientation, Switch, ColorDialog, ColorDialogButton, DropDown, StringObject, PropertyExpression
+    Grid, Label, Window, CheckButton, Scale, Orientation, Switch, ColorDialog, ColorDialogButton, DropDown, \
+    StringObject, PropertyExpression
 
 from HomeAssistantPlugin.actions import const as base_const
 from HomeAssistantPlugin.actions.cores.customization_core import customization_const
@@ -42,16 +43,16 @@ class CustomizationWindow(Window):
     """
     callback: Callable
 
-    connect_rows: List = []
+    connect_rows: list = []
     default_margin = 3
 
-    def __init__(self, lm, attributes: List, callback: Callable,
+    def __init__(self, lm, attributes: list, callback: Callable,
                  current: Customization = None, index: int = None):
         super().__init__()
         self.callback = callback
         self.lm = lm
         self.index: int = index
-        self.attributes: List[str] = attributes
+        self.attributes: list[str] = attributes
         self.current: Customization = current
 
         self.set_modal(True)
@@ -142,7 +143,7 @@ class CustomizationWindow(Window):
         button.set_margin_end(self.default_margin)
         return button
 
-    def _create_drop_down(self, attributes: List, check: CheckButton = None) -> DropDown:
+    def _create_drop_down(self, attributes: list, check: CheckButton = None) -> DropDown:
         drop_down = DropDown()
         drop_down.set_margin_top(self.default_margin)
         drop_down.set_margin_bottom(self.default_margin)

@@ -3,15 +3,14 @@ The module for the Home Assistant customization text window.
 """
 
 from functools import partial
-from typing import Callable, List
-
-from gi.repository.Gtk import StringObject
+from typing import Callable
 
 from HomeAssistantPlugin.actions import const as base_const
 from HomeAssistantPlugin.actions.cores.customization_core import customization_helper
 from HomeAssistantPlugin.actions.cores.customization_core.customization_window import CustomizationWindow
 from HomeAssistantPlugin.actions.show_text import text_const
 from HomeAssistantPlugin.actions.show_text.text_customization import TextCustomization
+from gi.repository.Gtk import StringObject
 
 
 class TextWindow(CustomizationWindow):
@@ -19,7 +18,7 @@ class TextWindow(CustomizationWindow):
     Window to customize text.
     """
 
-    def __init__(self, lm, attributes: List, callback: Callable,
+    def __init__(self, lm, attributes: list, callback: Callable,
                  current: TextCustomization = None, index: int = None):
         # add text_length to attributes
         attributes.insert(0, text_const.CUSTOM_TEXT_LENGTH)
