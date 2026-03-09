@@ -65,17 +65,17 @@ class TestCustomizationCore(unittest.TestCase):
         instance._reload.assert_called_once()
 
     @patch(
-        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore._create_ui_elements')
+        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.create_ui_elements')
     @patch(
         'HomeAssistantPlugin.actions.cores.customization_core.customization_core.Button')
     @patch(
         'HomeAssistantPlugin.actions.cores.customization_core.customization_core.ExpanderRow')
-    def test_create_ui_elements(self, expander_row_mock, button_mock, super_create_ui_elements_mock):
+    def testcreate_ui_elements(self, expander_row_mock, button_mock, super_create_ui_elements_mock):
         button_mock.return_value = button_mock
         expander_row_mock.return_value = expander_row_mock
 
         instance = CustomizationCore.__new__(CustomizationCore)
-        instance._create_ui_elements()
+        instance.create_ui_elements()
 
         super_create_ui_elements_mock.assert_called_once()
         button_mock.assert_called_once_with(icon_name="list-add", valign=3)
@@ -216,7 +216,7 @@ class TestCustomizationCore(unittest.TestCase):
         instance.refresh.assert_called_once()
 
     @patch(
-        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore._set_enabled_disabled')
+        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.set_enabled_disabled')
     def test_set_enabled_disabled_no_domain(self, super_set_enabled_disabled_mock):
         instance = CustomizationCore.__new__(CustomizationCore)
         instance.initialized = True
@@ -227,7 +227,7 @@ class TestCustomizationCore(unittest.TestCase):
         instance.lm = Mock()
         instance.lm.get.return_value = "label"
 
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         super_set_enabled_disabled_mock.assert_called_once()
         instance.settings.get_domain.assert_called_once()
@@ -238,7 +238,7 @@ class TestCustomizationCore(unittest.TestCase):
         instance.customization_expander.set_expanded.assert_called_once_with(False)
 
     @patch(
-        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore._set_enabled_disabled')
+        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.set_enabled_disabled')
     def test_set_enabled_disabled_no_entity(self, super_set_enabled_disabled_mock):
         instance = CustomizationCore.__new__(CustomizationCore)
         instance.initialized = True
@@ -249,7 +249,7 @@ class TestCustomizationCore(unittest.TestCase):
         instance.lm = Mock()
         instance.lm.get.return_value = "label"
 
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         super_set_enabled_disabled_mock.assert_called_once()
         instance.settings.get_domain.assert_called_once()
@@ -260,7 +260,7 @@ class TestCustomizationCore(unittest.TestCase):
         instance.customization_expander.set_expanded.assert_called_once_with(False)
 
     @patch(
-        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore._set_enabled_disabled')
+        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.set_enabled_disabled')
     def test_set_enabled_disabled_no_customizations(self, super_set_enabled_disabled_mock):
         instance = CustomizationCore.__new__(CustomizationCore)
         instance.initialized = True
@@ -272,7 +272,7 @@ class TestCustomizationCore(unittest.TestCase):
         instance.lm = Mock()
         instance.lm.get.return_value = "label"
 
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         super_set_enabled_disabled_mock.assert_called_once()
         instance.settings.get_domain.assert_called_once()
@@ -283,7 +283,7 @@ class TestCustomizationCore(unittest.TestCase):
         instance.customization_expander.set_expanded.assert_called_once_with(False)
 
     @patch(
-        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore._set_enabled_disabled')
+        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.set_enabled_disabled')
     def test_set_enabled_disabled_with_customizations(self, super_set_enabled_disabled_mock):
         instance = CustomizationCore.__new__(CustomizationCore)
         instance.initialized = True
@@ -295,7 +295,7 @@ class TestCustomizationCore(unittest.TestCase):
         instance.lm = Mock()
         instance.lm.get.return_value = "label"
 
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         super_set_enabled_disabled_mock.assert_called_once()
         instance.settings.get_domain.assert_called_once()

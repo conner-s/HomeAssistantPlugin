@@ -1,10 +1,22 @@
 """The module for the Home Assistant action that is loaded in StreamController."""
 
-from typing import List
-
+import gi
 from GtkHelper.GenerativeUI.ComboRow import ComboRow
 from HomeAssistantPlugin.actions import const
 from src.backend.PluginManager.ActionCore import ActionCore
+
+gi.require_version('Gtk', '4.0')
+from gi.repository import Gtk
+
+
+def set_substring_search(combo_row: ComboRow) -> None:
+    """Enable substring search mode on a ComboRow if supported by the installed libadwaita version."""
+    try:
+        widget = combo_row.widget
+        if hasattr(widget, "set_search_match_mode"):
+            widget.set_search_match_mode(Gtk.StringFilterMatchMode.SUBSTRING)
+    except AttributeError:
+        pass
 
 
 def requires_initialization(func):
@@ -12,6 +24,7 @@ def requires_initialization(func):
         if not getattr(self, 'initialized', False):
             return None
         return func(self, *args, **kwargs)
+
     return wrapper
 
 
@@ -26,7 +39,9 @@ class BaseCore(ActionCore):
         self.lm = self.plugin_base.locale_manager
         self.has_configuration = True
         self.track_entity = track_entity
-        self._create_ui_elements()
+        self.domain_combo = None
+        self.entity_combo = None
+        self.create_ui_elements()
         self._create_event_assigner()
 
     def on_ready(self) -> None:
@@ -55,34 +70,36 @@ class BaseCore(ActionCore):
             )
         self.refresh()
 
-    def get_config_rows(self) -> List:
+    def get_config_rows(self) -> list:
         """Get the rows to be displayed in the UI."""
         raise NotImplementedError("Must be implemented by subclasses.")
 
-    def _create_ui_elements(self) -> None:
+    def create_ui_elements(self) -> None:
         """Get all entity rows."""
         self.domain_combo: ComboRow = ComboRow(
             self, const.SETTING_ENTITY_DOMAIN, const.EMPTY_STRING, [],
             const.LABEL_ENTITY_DOMAIN, enable_search=True,
-            on_change=self._on_change_domain, can_reset=False,
+            on_change=self.on_change_domain, can_reset=False,
             complex_var_name=True
         )
+        set_substring_search(self.domain_combo)
 
         self.entity_combo: ComboRow = ComboRow(
             self, const.SETTING_ENTITY_ENTITY, const.EMPTY_STRING, [],
             const.LABEL_ENTITY_ENTITY, enable_search=True,
-            on_change=self._on_change_entity, can_reset=False,
+            on_change=self.on_change_entity, can_reset=False,
             complex_var_name=True
         )
+        set_substring_search(self.entity_combo)
 
     @requires_initialization
     def _reload(self, *_):
         """Reload the action."""
-        self._set_enabled_disabled()
+        self.set_enabled_disabled()
         self.refresh()
 
     @requires_initialization
-    def _on_change_domain(self, _, domain, old_domain):
+    def on_change_domain(self, _, domain, old_domain):
         """Execute when the domain is changed."""
         domain = str(domain) if domain is not None else None
         old_domain = str(old_domain) if old_domain is not None else None
@@ -97,10 +114,10 @@ class BaseCore(ActionCore):
         if domain:
             self._load_entities()
 
-        self._set_enabled_disabled()
+        self.set_enabled_disabled()
 
     @requires_initialization
-    def _on_change_entity(self, _, entity, old_entity):
+    def on_change_entity(self, _, entity, old_entity):
         """Execute when the entity is changed."""
         entity = str(entity) if entity is not None else None
         old_entity = str(old_entity) if old_entity is not None else None
@@ -112,7 +129,7 @@ class BaseCore(ActionCore):
             self.plugin_base.backend.add_tracked_entity(entity, self.refresh)
 
         self.refresh()
-        self._set_enabled_disabled()
+        self.set_enabled_disabled()
 
     @requires_initialization
     def refresh(self, state: dict = None) -> None:
@@ -156,14 +173,14 @@ class BaseCore(ActionCore):
         if entities != self._get_current_entities():
             self.entity_combo.populate(entities, entity, trigger_callback=False)
 
-    def _get_current_domains(self) -> List[str]:
+    def _get_current_domains(self) -> list[str]:
         """Get the domains currently displayed in the domain combo."""
         return [
             str(self.domain_combo.get_item_at(i))
             for i in range(self.domain_combo.get_item_amount())
         ]
 
-    def _get_current_entities(self) -> List[str]:
+    def _get_current_entities(self) -> list[str]:
         """Get the entities currently displayed in the entity combo."""
         return [
             str(self.entity_combo.get_item_at(i))
@@ -171,13 +188,13 @@ class BaseCore(ActionCore):
         ]
 
     @requires_initialization
-    def _set_enabled_disabled(self) -> None:
+    def set_enabled_disabled(self) -> None:
         """Set the active/inactive state for all rows."""
         domain = self.settings.get_domain()
         is_domain_set = bool(domain)
         self.entity_combo.set_sensitive(is_domain_set)
 
-    def _get_domains(self) -> List[str]:
+    def _get_domains(self) -> list[str]:
         """Get the domains available in Home Assistant."""
         raise NotImplementedError("Must be implemented by subclasses.")
 

@@ -3,6 +3,7 @@ class ComboRow:
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
+        self._widget = self
 
     def get_selected_item(self):
         pass
@@ -18,3 +19,11 @@ class ComboRow:
 
     def get_item_amount(self) -> int:
         return len(self.args[3])
+
+    @property
+    def widget(self):
+        return self._widget
+
+    @widget.setter
+    def widget(self, value):
+        self._widget = value

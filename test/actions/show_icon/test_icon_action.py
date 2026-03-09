@@ -64,15 +64,15 @@ class TestShowIcon(unittest.TestCase):
 
         self.assertEqual(instance.get_config_rows(), expected_rows)
 
-    @patch('HomeAssistantPlugin.actions.show_icon.icon_action.CustomizationCore._create_ui_elements')
+    @patch('HomeAssistantPlugin.actions.show_icon.icon_action.CustomizationCore.create_ui_elements')
     @patch('HomeAssistantPlugin.actions.show_icon.icon_action.EntryRow')
     @patch('HomeAssistantPlugin.actions.show_icon.icon_action.ColorButtonRow')
     @patch('HomeAssistantPlugin.actions.show_icon.icon_action.ScaleRow')
-    def test_create_ui_elements(self, scale_row_mock, color_button_row_mock, entry_row_mock, super_create_ui_elements_mock):
+    def testcreate_ui_elements(self, scale_row_mock, color_button_row_mock, entry_row_mock, super_create_ui_elements_mock):
         instance = ShowIcon.__new__(ShowIcon)
         instance._reload = Mock()
 
-        instance._create_ui_elements()
+        instance.create_ui_elements()
 
         super_create_ui_elements_mock.assert_called_once()
         self.assertTrue(hasattr(instance, 'icon'))
@@ -99,7 +99,7 @@ class TestShowIcon(unittest.TestCase):
             )
         ])
 
-    @patch('HomeAssistantPlugin.actions.show_icon.icon_action.CustomizationCore._set_enabled_disabled')
+    @patch('HomeAssistantPlugin.actions.show_icon.icon_action.CustomizationCore.set_enabled_disabled')
     def test_set_enabled_disabled_no_domain(self, super_set_enabled_disabled_mock):
         lm = {
             icon_const.LABEL_ICON_NO_ENTITY: "No entity selected"
@@ -116,7 +116,7 @@ class TestShowIcon(unittest.TestCase):
         instance.opacity = Mock()
         instance.lm = lm
 
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         super_set_enabled_disabled_mock.assert_called_once()
         instance.icon.widget.set_sensitive.assert_called_once_with(False)
@@ -127,7 +127,7 @@ class TestShowIcon(unittest.TestCase):
         instance.opacity.widget.set_sensitive.assert_called_once_with(False)
         instance.opacity.widget.set_subtitle.assert_called_once_with(lm[icon_const.LABEL_ICON_NO_ENTITY])
 
-    @patch('HomeAssistantPlugin.actions.show_icon.icon_action.CustomizationCore._set_enabled_disabled')
+    @patch('HomeAssistantPlugin.actions.show_icon.icon_action.CustomizationCore.set_enabled_disabled')
     def test_set_enabled_disabled_no_entity(self, super_set_enabled_disabled_mock):
         lm = {
             icon_const.LABEL_ICON_NO_ENTITY: "No entity selected"
@@ -144,7 +144,7 @@ class TestShowIcon(unittest.TestCase):
         instance.opacity = Mock()
         instance.lm = lm
 
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         super_set_enabled_disabled_mock.assert_called_once()
         instance.icon.widget.set_sensitive.assert_called_once_with(False)
@@ -155,7 +155,7 @@ class TestShowIcon(unittest.TestCase):
         instance.opacity.widget.set_sensitive.assert_called_once_with(False)
         instance.opacity.widget.set_subtitle.assert_called_once_with(lm[icon_const.LABEL_ICON_NO_ENTITY])
 
-    @patch('HomeAssistantPlugin.actions.show_icon.icon_action.CustomizationCore._set_enabled_disabled')
+    @patch('HomeAssistantPlugin.actions.show_icon.icon_action.CustomizationCore.set_enabled_disabled')
     def test_set_enabled_disabled_success(self, super_set_enabled_disabled_mock):
         instance = ShowIcon.__new__(ShowIcon)
         instance.initialized = True
@@ -167,7 +167,7 @@ class TestShowIcon(unittest.TestCase):
         instance.scale = Mock()
         instance.opacity = Mock()
 
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         super_set_enabled_disabled_mock.assert_called_once()
         instance.icon.widget.set_sensitive.assert_called_once_with(True)
@@ -187,7 +187,7 @@ class TestShowIcon(unittest.TestCase):
         instance.settings = Mock()
         instance.set_media = Mock()
         instance._load_customizations = Mock()
-        instance._set_enabled_disabled = Mock()
+        instance.set_enabled_disabled = Mock()
         icon_helper_mock.get_icon.return_value = ("icon_path", 3)
 
         state = {"state_key": "state_value"}
@@ -198,7 +198,7 @@ class TestShowIcon(unittest.TestCase):
         instance.set_media.assert_called_once_with(media_path="icon_path", size=3)
         instance.settings.get_entity.assert_not_called()
         instance._load_customizations.assert_not_called()
-        instance._set_enabled_disabled.assert_not_called()
+        instance.set_enabled_disabled.assert_not_called()
 
     def test_refresh_no_state(self):
         instance = ShowIcon.__new__(ShowIcon)
@@ -209,14 +209,14 @@ class TestShowIcon(unittest.TestCase):
         instance.settings.get_entity.return_value = "entity_id"
         instance.set_media = Mock()
         instance._load_customizations = Mock()
-        instance._set_enabled_disabled = Mock()
+        instance.set_enabled_disabled = Mock()
 
         instance.refresh()
 
         instance.set_media.assert_called_once_with()
         instance.plugin_base.backend.get_entity.assert_called_once_with("entity_id")
         instance._load_customizations.assert_not_called()
-        instance._set_enabled_disabled.assert_not_called()
+        instance.set_enabled_disabled.assert_not_called()
 
     @patch('HomeAssistantPlugin.actions.show_icon.icon_action.icon_helper')
     def test_refresh_state_from_backend(self, icon_helper_mock):
@@ -231,7 +231,7 @@ class TestShowIcon(unittest.TestCase):
         instance.settings.get_entity.return_value = "entity_id"
         instance.set_media = Mock()
         instance._load_customizations = Mock()
-        instance._set_enabled_disabled = Mock()
+        instance.set_enabled_disabled = Mock()
         icon_helper_mock.get_icon.return_value = ("icon_path", 3)
 
         instance.refresh()
@@ -240,7 +240,7 @@ class TestShowIcon(unittest.TestCase):
         icon_helper_mock.get_icon.assert_called_once_with(state, instance.settings, True)
         instance.set_media.assert_called_once_with(media_path="icon_path", size=3)
         instance._load_customizations.assert_called_once()
-        instance._set_enabled_disabled.assert_called_once()
+        instance.set_enabled_disabled.assert_called_once()
 
     @patch('HomeAssistantPlugin.actions.show_icon.icon_action.icon_helper')
     def test_refresh_state_as_parameter(self, icon_helper_mock):
@@ -254,7 +254,7 @@ class TestShowIcon(unittest.TestCase):
         instance.settings.get_entity.return_value = "entity_id"
         instance.set_media = Mock()
         instance._load_customizations = Mock()
-        instance._set_enabled_disabled = Mock()
+        instance.set_enabled_disabled = Mock()
         icon_helper_mock.get_icon.return_value = ("icon_path", 3)
 
         instance.refresh(state)
@@ -263,7 +263,7 @@ class TestShowIcon(unittest.TestCase):
         icon_helper_mock.get_icon.assert_called_once_with(state, instance.settings, True)
         instance.set_media.assert_called_once_with(media_path="icon_path", size=3)
         instance._load_customizations.assert_called_once()
-        instance._set_enabled_disabled.assert_called_once()
+        instance.set_enabled_disabled.assert_called_once()
 
     def test_get_domains(self):
         instance = ShowIcon.__new__(ShowIcon)

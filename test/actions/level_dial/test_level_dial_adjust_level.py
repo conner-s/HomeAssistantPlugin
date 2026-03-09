@@ -372,7 +372,7 @@ class TestLevelDialAdjustLevel(unittest.TestCase):
         # But no HA command yet
         backend.perform_action.assert_not_called()
 
-    @patch.object(LevelDial, '_set_enabled_disabled')
+    @patch.object(LevelDial, 'set_enabled_disabled')
     @patch.object(LevelDial, '_load_customizations')
     @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
     def test_adjust_level_refresh_clears_pending(self, mock_init, _load_cust, _set_ed):

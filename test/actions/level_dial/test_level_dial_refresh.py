@@ -64,7 +64,7 @@ class TestLevelDialRefresh(unittest.TestCase):
         instance.set_center_label.assert_called_once_with("N/A")
         instance.set_media.assert_called_once_with()
 
-    @patch.object(LevelDial, '_set_enabled_disabled')
+    @patch.object(LevelDial, 'set_enabled_disabled')
     @patch.object(LevelDial, '_load_customizations')
     @patch('HomeAssistantPlugin.actions.level_dial.level_dial._get_icon_image')
     @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
@@ -96,7 +96,7 @@ class TestLevelDialRefresh(unittest.TestCase):
         )
         instance.set_media.assert_called_once_with(image=mock_get_icon.return_value, size=0.75)
 
-    @patch.object(LevelDial, '_set_enabled_disabled')
+    @patch.object(LevelDial, 'set_enabled_disabled')
     @patch.object(LevelDial, '_load_customizations')
     @patch('HomeAssistantPlugin.actions.level_dial.level_dial._get_icon_image')
     @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
@@ -127,7 +127,7 @@ class TestLevelDialRefresh(unittest.TestCase):
             outline_width=3, outline_color=[0, 0, 0]
         )
 
-    @patch.object(LevelDial, '_set_enabled_disabled')
+    @patch.object(LevelDial, 'set_enabled_disabled')
     @patch.object(LevelDial, '_load_customizations')
     @patch('HomeAssistantPlugin.actions.level_dial.level_dial._get_icon_image')
     @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
@@ -159,7 +159,7 @@ class TestLevelDialRefresh(unittest.TestCase):
             outline_width=3, outline_color=[0, 0, 0]
         )
 
-    @patch.object(LevelDial, '_set_enabled_disabled')
+    @patch.object(LevelDial, 'set_enabled_disabled')
     @patch.object(LevelDial, '_load_customizations')
     @patch('HomeAssistantPlugin.actions.level_dial.level_dial._get_icon_image')
     @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
@@ -212,7 +212,7 @@ class TestLevelDialRefresh(unittest.TestCase):
 
         instance.set_center_label.assert_called_once_with("?")
 
-    @patch.object(LevelDial, '_set_enabled_disabled')
+    @patch.object(LevelDial, 'set_enabled_disabled')
     @patch.object(LevelDial, '_load_customizations')
     @patch('HomeAssistantPlugin.actions.level_dial.level_dial._get_icon_image')
     @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
@@ -243,7 +243,7 @@ class TestLevelDialRefresh(unittest.TestCase):
             outline_width=3, outline_color=[0, 0, 0]
         )
 
-    @patch.object(LevelDial, '_set_enabled_disabled')
+    @patch.object(LevelDial, 'set_enabled_disabled')
     @patch.object(LevelDial, '_load_customizations')
     @patch('HomeAssistantPlugin.actions.level_dial.level_dial._get_icon_image')
     @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')

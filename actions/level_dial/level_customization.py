@@ -1,6 +1,6 @@
 """Module to manage level dial customizations."""
 
-from typing import Tuple, Dict, Any
+from typing import Any
 
 from HomeAssistantPlugin.actions.cores.customization_core import customization_const
 from HomeAssistantPlugin.actions.cores.customization_core.customization import Customization
@@ -11,10 +11,10 @@ class LevelDialCustomization(Customization):
     """Class to represent a level dial customization."""
 
     def __init__(self, attribute: str, operator: str, value: str, icon: str,
-                 color: Tuple[int, int, int, int]):
+                 color: tuple[int, int, int, int]):
         super().__init__(attribute, operator, value)
         self.icon: str = icon
-        self.color: Tuple[int, int, int, int] = color
+        self.color: tuple[int, int, int, int] = color
 
     @classmethod
     def from_dict(cls, customization: dict):
@@ -26,10 +26,10 @@ class LevelDialCustomization(Customization):
     def get_icon(self) -> str:
         return self.icon
 
-    def get_color(self) -> Tuple[int, int, int, int]:
+    def get_color(self) -> tuple[int, int, int, int]:
         return self.color
 
-    def export(self) -> Dict[str, Any]:
+    def export(self) -> dict[str, Any]:
         return {
             customization_const.CONDITION: {
                 customization_const.ATTRIBUTE: self.attribute,

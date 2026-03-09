@@ -14,7 +14,7 @@ from HomeAssistantPlugin.actions.cores.base_core.base_core import BaseCore
 
 class TestBaseCoreLoadDomains(unittest.TestCase):
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
     @patch.object(BaseCore, "_get_domains")
     def test_load_domains_domain_not_in_domains(self, get_domains_mock, _, __):
@@ -42,7 +42,7 @@ class TestBaseCoreLoadDomains(unittest.TestCase):
         get_domains_mock.assert_called_once()
         domain_combo_mock.populate.assert_called_once_with(domains_sorted, domain, trigger_callback=False)
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
     @patch.object(BaseCore, "_get_domains")
     def test_load_domains_success(self, get_domains_mock, _, __):
@@ -70,7 +70,7 @@ class TestBaseCoreLoadDomains(unittest.TestCase):
         domain_combo_mock.populate.assert_called_once_with(domains_sorted, domain, trigger_callback=False)
 
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
     @patch.object(BaseCore, "_get_domains")
     def test_load_domains_with_none_in_domains(self, get_domains_mock, _, __):
@@ -95,7 +95,7 @@ class TestBaseCoreLoadDomains(unittest.TestCase):
 
         domain_combo_mock.populate.assert_called_once_with(domains_sorted, domain, trigger_callback=False)
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
     @patch.object(BaseCore, "_get_domains")
     def test_load_domains_no_update_needed(self, get_domains_mock, _, __):

@@ -14,7 +14,7 @@ from HomeAssistantPlugin.actions.cores.base_core.base_core import BaseCore
 
 class TestBaseCoreOnReady(unittest.TestCase):
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
     @patch.object(BaseCore, "_load_domains")
     @patch.object(BaseCore, "_load_entities")
@@ -34,7 +34,7 @@ class TestBaseCoreOnReady(unittest.TestCase):
         load_entities_mock.assert_called_once()
         load_domains_mock.assert_called_once()
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
     @patch.object(BaseCore, "_load_domains")
     @patch.object(BaseCore, "_load_entities")
@@ -54,7 +54,7 @@ class TestBaseCoreOnReady(unittest.TestCase):
         load_entities_mock.assert_called_once()
         load_domains_mock.assert_called_once()
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
     @patch.object(BaseCore, "_load_domains")
     @patch.object(BaseCore, "_load_entities")

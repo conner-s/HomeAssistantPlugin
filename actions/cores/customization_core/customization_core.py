@@ -1,9 +1,7 @@
 """The module for the Home Assistant action that is loaded in StreamController."""
 from copy import deepcopy
-from typing import List
 
 import gi
-
 
 gi.require_version("Gtk", "4.0")
 from gi.repository.Gtk import Button, Align
@@ -19,6 +17,8 @@ class CustomizationCore(BaseCore):
     """Action core for all Home Assistant Actions."""
 
     def __init__(self, window_implementation, customization_implementation, row_implementation, *args, **kwargs):
+        # Must be set before create_ui_elements in BaseCore is called
+        self.customization_expander = None
         super().__init__(*args, **kwargs)
         self.window_implementation = window_implementation
         self.customization_implementation = customization_implementation
@@ -34,9 +34,9 @@ class CustomizationCore(BaseCore):
 
         self._reload()
 
-    def _create_ui_elements(self) -> None:
+    def create_ui_elements(self) -> None:
         """Get all action rows."""
-        super()._create_ui_elements()
+        super().create_ui_elements()
 
         add_customization_button = Button(icon_name="list-add", valign=Align.CENTER)
         add_customization_button.set_size_request(15, 15)
@@ -99,11 +99,11 @@ class CustomizationCore(BaseCore):
         self.refresh()
 
     @requires_initialization
-    def _set_enabled_disabled(self) -> None:
+    def set_enabled_disabled(self) -> None:
         """
         Set the active/inactive state for all rows.
         """
-        super()._set_enabled_disabled()
+        super().set_enabled_disabled()
 
         domain = self.settings.get_domain()
         is_domain_set = bool(domain)
@@ -122,7 +122,7 @@ class CustomizationCore(BaseCore):
                 len(self.settings.get_customizations()) > 0
             )
 
-    def _get_attributes(self) -> List[str]:
+    def _get_attributes(self) -> list[str]:
         """
         Gets the list of attributes for the selected entity.
         :return: the list of attributes

@@ -1,7 +1,5 @@
 """Module to manage HomeAssistantPlugin action settings."""
 
-from typing import List
-
 from HomeAssistantPlugin.actions.cores.base_core.base_settings import BaseSettings
 from HomeAssistantPlugin.actions.cores.customization_core import customization_const
 from HomeAssistantPlugin.actions.cores.customization_core.customization import Customization
@@ -20,7 +18,8 @@ class CustomizationSettings(BaseSettings):
         self.customization_implementation = customization_implementation
 
     def get_customizations(self):
-        return [self.customization_implementation.from_dict(c) for c in self._action.get_settings()[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS]]
+        return [self.customization_implementation.from_dict(c) for c in
+                self._action.get_settings()[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS]]
 
     def move_customization(self, index: int, offset: int):
         """
@@ -31,7 +30,8 @@ class CustomizationSettings(BaseSettings):
         """
         settings = self._action.get_settings()
         customization = settings[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS].pop(index)
-        settings[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS].insert(index + offset, customization)
+        settings[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS].insert(index + offset,
+                                                                                             customization)
         self._action.set_settings(settings)
 
     def remove_customization(self, index: int) -> None:

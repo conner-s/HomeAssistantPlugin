@@ -1,7 +1,5 @@
 """The module for the Level Dial customization row."""
 
-from typing import List, Dict
-
 from HomeAssistantPlugin.actions.cores.customization_core import customization_helper
 from HomeAssistantPlugin.actions.cores.customization_core.customization_row import CustomizationRow
 from HomeAssistantPlugin.actions.cores.customization_core.customization_settings import CustomizationSettings
@@ -9,7 +7,7 @@ from HomeAssistantPlugin.actions.level_dial import level_const
 from HomeAssistantPlugin.actions.level_dial.level_customization import LevelDialCustomization
 
 
-def get_value(state: Dict, customization: LevelDialCustomization):
+def get_value(state: dict, customization: LevelDialCustomization):
     """Gets the current value that the customization references."""
     if customization.get_attribute() == "state":
         return state.get("state")
@@ -20,7 +18,7 @@ class LevelDialRow(CustomizationRow):
     """Row displaying a level dial customization."""
 
     def __init__(self, lm, customization: LevelDialCustomization, customization_count: int, index: int,
-                 attributes: List, state: Dict, settings: CustomizationSettings):
+                 attributes: list, state: dict, settings: CustomizationSettings):
         super().__init__(lm, customization_count, index, attributes, state, settings)
 
         current_value = get_value(state, customization)
