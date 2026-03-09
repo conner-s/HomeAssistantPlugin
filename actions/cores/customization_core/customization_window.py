@@ -111,15 +111,15 @@ class CustomizationWindow(Window):
         self.set_child(grid)
 
     def _after_init(self) -> None:
-        self._set_default_values()
-        self._set_current_values()
+        self.set_default_values()
+        self.set_current_values()
         self._connect_rows()
 
-    def _set_default_values(self) -> None:
+    def set_default_values(self) -> None:
         self.condition_attribute.set_selected(0)
         self.operator.set_selected(0)
 
-    def _set_current_values(self) -> None:
+    def set_current_values(self) -> None:
         if not self.current:
             return
 
@@ -157,7 +157,7 @@ class CustomizationWindow(Window):
         drop_down.set_model(model)
 
         self.connect_rows.append(
-            partial(drop_down.connect, base_const.CONNECT_NOTIFY_SELECTED_ITEM, self._on_widget_changed))
+            partial(drop_down.connect, base_const.CONNECT_NOTIFY_SELECTED_ITEM, self.on_widget_changed))
 
         if check is not None:
             self.connect_rows.append(partial(drop_down.connect, base_const.CONNECT_NOTIFY_SELECTED_ITEM,
@@ -185,7 +185,7 @@ class CustomizationWindow(Window):
         drop_down.set_model(model)
 
         self.connect_rows.append(
-            partial(drop_down.connect, base_const.CONNECT_NOTIFY_SELECTED_ITEM, self._on_widget_changed))
+            partial(drop_down.connect, base_const.CONNECT_NOTIFY_SELECTED_ITEM, self.on_widget_changed))
 
         return drop_down
 
@@ -205,7 +205,7 @@ class CustomizationWindow(Window):
         entry.set_margin_start(self.default_margin)
         entry.set_margin_end(15)
         self.connect_rows.append(
-            partial(entry.connect, base_const.CONNECT_CHANGED, self._on_widget_changed))
+            partial(entry.connect, base_const.CONNECT_CHANGED, self.on_widget_changed))
         self.connect_rows.append(
             partial(entry.connect, base_const.CONNECT_ACTIVATE, self.on_add_button))
         if check is not None:
@@ -264,7 +264,7 @@ class CustomizationWindow(Window):
     def _on_cancel_button(self, _):
         self.destroy()
 
-    def on_add_button(self, *args, **kwargs) -> bool:
+    def on_add_button(self, *_, **__) -> bool:
         if self.condition_attribute.get_selected() < 0:
             self.condition_attribute.add_css_class(customization_const.ERROR)
             return False
@@ -286,7 +286,7 @@ class CustomizationWindow(Window):
 
         return True
 
-    def _on_widget_changed(self, *args, **kwargs) -> None:
+    def on_widget_changed(self, *_, **__) -> None:
         self.condition_attribute.remove_css_class(customization_const.ERROR)
         self.operator.remove_css_class(customization_const.ERROR)
         self.entry_value.remove_css_class(customization_const.ERROR)
@@ -305,7 +305,7 @@ class CustomizationWindow(Window):
         check.set_margin_start(self.default_margin)
         check.set_margin_end(self.default_margin)
         self.connect_rows.append(
-            partial(check.connect, base_const.CONNECT_TOGGLED, self._on_widget_changed))
+            partial(check.connect, base_const.CONNECT_TOGGLED, self.on_widget_changed))
         return check
 
     def _on_change_scale(self, scale, *args):

@@ -2,9 +2,6 @@
 The module for the Home Assistant action that is loaded in StreamController.
 """
 
-from GtkHelper.GenerativeUI.ColorButtonRow import ColorButtonRow
-from GtkHelper.GenerativeUI.EntryRow import EntryRow
-from GtkHelper.GenerativeUI.ScaleRow import ScaleRow
 from HomeAssistantPlugin.actions.cores.base_core.base_core import requires_initialization
 from HomeAssistantPlugin.actions.cores.customization_core.customization_core import CustomizationCore
 from HomeAssistantPlugin.actions.show_icon import icon_const, icon_helper
@@ -13,11 +10,20 @@ from HomeAssistantPlugin.actions.show_icon.icon_row import IconRow
 from HomeAssistantPlugin.actions.show_icon.icon_settings import ShowIconSettings
 from HomeAssistantPlugin.actions.show_icon.icon_window import IconWindow
 
+from GtkHelper.GenerativeUI.ColorButtonRow import ColorButtonRow
+from GtkHelper.GenerativeUI.EntryRow import EntryRow
+from GtkHelper.GenerativeUI.ScaleRow import ScaleRow
+
 
 class ShowIcon(CustomizationCore):
     """Action to be loaded by StreamController."""
 
     def __init__(self, *args, **kwargs):
+        # Must be set before create_ui_elements in BaseCore is called
+        self.icon = None
+        self.color = None
+        self.scale = None
+        self.opacity = None
         super().__init__(window_implementation=IconWindow, customization_implementation=IconCustomization,
                          row_implementation=IconRow, settings_implementation=ShowIconSettings, track_entity=True, *args,
                          **kwargs)
@@ -27,9 +33,9 @@ class ShowIcon(CustomizationCore):
         return [self.domain_combo.widget, self.entity_combo.widget, self.icon.widget, self.color.widget,
                 self.scale.widget, self.opacity.widget, self.customization_expander.widget]
 
-    def _create_ui_elements(self) -> None:
+    def create_ui_elements(self) -> None:
         """Get all action rows."""
-        super()._create_ui_elements()
+        super().create_ui_elements()
 
         self.icon: EntryRow = EntryRow(
             self, icon_const.SETTING_ICON_ICON, icon_const.EMPTY_STRING,
@@ -58,11 +64,11 @@ class ShowIcon(CustomizationCore):
         )
 
     @requires_initialization
-    def _set_enabled_disabled(self) -> None:
+    def set_enabled_disabled(self) -> None:
         """
         Set the active/inactive state for all rows.
         """
-        super()._set_enabled_disabled()
+        super().set_enabled_disabled()
 
         domain = self.settings.get_domain()
         is_domain_set = bool(domain)
@@ -115,7 +121,7 @@ class ShowIcon(CustomizationCore):
         self.set_media(media_path=icon, size=scale)
 
         self._load_customizations()
-        self._set_enabled_disabled()
+        self.set_enabled_disabled()
 
     def _get_domains(self) -> list[str]:
         """This class needs all domains that provide actions in Home Assistant."""

@@ -38,7 +38,7 @@ class IconWindow(CustomizationWindow):
         self.icon = self._create_entry(self.check_icon)
         self.icon.set_margin_end(self.default_margin)
         self.connect_rows.append(
-            partial(self.icon.connect, base_const.CONNECT_ACTIVATE, self._on_widget_changed))
+            partial(self.icon.connect, base_const.CONNECT_ACTIVATE, self.on_widget_changed))
 
         self.color = self._create_color_button(self.check_color)
 
@@ -92,8 +92,8 @@ class IconWindow(CustomizationWindow):
 
         self._after_init()
 
-    def _set_default_values(self) -> None:
-        super()._set_default_values()
+    def set_default_values(self) -> None:
+        super().set_default_values()
 
         rgba = customization_helper.convert_color_list_to_rgba(icon_const.DEFAULT_ICON_COLOR)
         self.color.set_rgba(rgba)
@@ -104,11 +104,11 @@ class IconWindow(CustomizationWindow):
         self.opacity.set_value(icon_const.DEFAULT_ICON_OPACITY)
         self.opacity_entry.set_text(str(icon_const.DEFAULT_ICON_OPACITY))
 
-    def _set_current_values(self) -> None:
+    def set_current_values(self) -> None:
         if not self.current:
             return
 
-        super()._set_current_values()
+        super().set_current_values()
 
         self.icon.set_text(self.current.get_icon() or icon_const.EMPTY_STRING)
         self.check_icon.set_active(self.current.get_icon() is not None)
@@ -130,7 +130,7 @@ class IconWindow(CustomizationWindow):
         self.opacity_entry.set_text(
             str(int(self.current.get_opacity() or icon_const.DEFAULT_ICON_OPACITY)))
 
-    def on_add_button(self, *args, **kwargs) -> None:
+    def on_add_button(self, *_, **__) -> None:
         if not super().on_add_button():
             return
 
@@ -167,8 +167,8 @@ class IconWindow(CustomizationWindow):
 
         self.destroy()
 
-    def _on_widget_changed(self, *args, **kwargs) -> None:
-        super()._on_widget_changed()
+    def on_widget_changed(self, *_, **__) -> None:
+        super().on_widget_changed()
 
         self.icon.remove_css_class(icon_const.ERROR)
         self.check_icon.remove_css_class(icon_const.ERROR)

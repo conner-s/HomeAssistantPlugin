@@ -10,29 +10,29 @@ absolute_plugin_path = str(Path(__file__).parent.parent.parent.parent.parent.par
 sys.path.insert(0, absolute_plugin_path)
 
 from HomeAssistantPlugin.actions import const
-from HomeAssistantPlugin.actions.cores.base_core.base_core import BaseCore, _set_substring_search
+from HomeAssistantPlugin.actions.cores.base_core.base_core import BaseCore, set_substring_search
 
 
 class TestBaseCoreCreateUiElements(unittest.TestCase):
 
     @patch.object(BaseCore, "_create_event_assigner")
     def test_create_ui_elements_success(self, _):
-        with patch.object(BaseCore, "_create_ui_elements"):
-            # _create_ui_elements is called in the constructor
+        with patch.object(BaseCore, "create_ui_elements"):
+            # create_ui_elements is called in the constructor
             instance = BaseCore(Mock(), False)
 
-        instance._create_ui_elements()
+        instance.create_ui_elements()
 
         self.assertEqual((instance, const.SETTING_ENTITY_DOMAIN, const.EMPTY_STRING, [],
                           const.LABEL_ENTITY_DOMAIN), instance.domain_combo.args)
         self.assertEqual({"enable_search": True,
-                          "on_change": instance._on_change_domain, "can_reset": False,
+                          "on_change": instance.on_change_domain, "can_reset": False,
                           "complex_var_name": True}, instance.domain_combo.kwargs)
 
         self.assertEqual((instance, const.SETTING_ENTITY_ENTITY, const.EMPTY_STRING, [],
                           const.LABEL_ENTITY_ENTITY), instance.entity_combo.args)
         self.assertEqual({"enable_search": True,
-                          "on_change": instance._on_change_entity, "can_reset": False,
+                          "on_change": instance.on_change_entity, "can_reset": False,
                           "complex_var_name": True}, instance.entity_combo.kwargs)
 
     def test_set_substring_search_calls_set_search_match_mode_when_available(self):
@@ -42,7 +42,7 @@ class TestBaseCoreCreateUiElements(unittest.TestCase):
         combo_mock.widget = widget_mock
 
         with patch("HomeAssistantPlugin.actions.cores.base_core.base_core.Gtk") as gtk_mock:
-            _set_substring_search(combo_mock)
+            set_substring_search(combo_mock)
 
         widget_mock.set_search_match_mode.assert_called_once_with(
             gtk_mock.StringFilterMatchMode.SUBSTRING
@@ -54,7 +54,7 @@ class TestBaseCoreCreateUiElements(unittest.TestCase):
         combo_mock = Mock()
         combo_mock.widget = widget_mock
 
-        _set_substring_search(combo_mock)  # must not raise
+        set_substring_search(combo_mock)  # must not raise
 
         self.assertFalse(hasattr(widget_mock, "set_search_match_mode"))
 
@@ -63,5 +63,5 @@ class TestBaseCoreCreateUiElements(unittest.TestCase):
         from unittest.mock import PropertyMock
         combo_mock = Mock()
         type(combo_mock).widget = PropertyMock(side_effect=AttributeError())
-        _set_substring_search(combo_mock)  # must not raise
+        set_substring_search(combo_mock)  # must not raise
 

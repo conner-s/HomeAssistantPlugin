@@ -125,6 +125,10 @@ class LevelDial(CustomizationCore):
     """Dial action that controls Home Assistant entity levels (brightness, fan speed, etc.)."""
 
     def __init__(self, *args, **kwargs):
+        # Must be set before create_ui_elements in BaseCore is called
+        self.label_entry = None
+        self.step_scale = None
+        self.batch_delay_scale = None
         super().__init__(
             *args,
             window_implementation=LevelDialWindow,
@@ -217,8 +221,8 @@ class LevelDial(CustomizationCore):
             self.customization_expander.widget,
         ]
 
-    def _create_ui_elements(self) -> None:
-        super()._create_ui_elements()
+    def create_ui_elements(self) -> None:
+        super().create_ui_elements()
 
         self.label_entry: EntryRow = EntryRow(
             self, level_const.SETTING_LEVEL_LABEL, level_const.DEFAULT_LABEL,
@@ -430,11 +434,11 @@ class LevelDial(CustomizationCore):
             self.set_media(image=icon_img, size=0.75)
 
         self._load_customizations()
-        self._set_enabled_disabled()
+        self.set_enabled_disabled()
 
     @requires_initialization
-    def _set_enabled_disabled(self) -> None:
-        super()._set_enabled_disabled()
+    def set_enabled_disabled(self) -> None:
+        super().set_enabled_disabled()
         domain = self.settings.get_domain()
         entity = self.settings.get_entity()
         has_entity = bool(domain) and bool(entity)

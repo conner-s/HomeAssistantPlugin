@@ -3,11 +3,6 @@ The module for the Home Assistant action that is loaded in StreamController.
 """
 from collections import Counter
 
-from GtkHelper.GenerativeUI.ColorButtonRow import ColorButtonRow
-from GtkHelper.GenerativeUI.ComboRow import ComboRow
-from GtkHelper.GenerativeUI.ExpanderRow import ExpanderRow
-from GtkHelper.GenerativeUI.ScaleRow import ScaleRow
-from GtkHelper.GenerativeUI.SwitchRow import SwitchRow
 from HomeAssistantPlugin.actions.cores.base_core.base_core import requires_initialization
 from HomeAssistantPlugin.actions.cores.customization_core import customization_const
 from HomeAssistantPlugin.actions.cores.customization_core.customization_core import CustomizationCore
@@ -18,11 +13,28 @@ from HomeAssistantPlugin.actions.show_text.text_row import TextRow
 from HomeAssistantPlugin.actions.show_text.text_settings import ShowTextSettings
 from HomeAssistantPlugin.actions.show_text.text_window import TextWindow
 
+from GtkHelper.GenerativeUI.ColorButtonRow import ColorButtonRow
+from GtkHelper.GenerativeUI.ComboRow import ComboRow
+from GtkHelper.GenerativeUI.ExpanderRow import ExpanderRow
+from GtkHelper.GenerativeUI.ScaleRow import ScaleRow
+from GtkHelper.GenerativeUI.SwitchRow import SwitchRow
+
 
 class ShowText(CustomizationCore):
     """Action to be loaded by StreamController."""
 
     def __init__(self, *args, **kwargs):
+        # Must be set before create_ui_elements in BaseCore is called
+        self.position = None
+        self.attribute = None
+        self.round = None
+        self.round_precision = None
+        self.text_size = None
+        self.text_color = None
+        self.outline_size = None
+        self.outline_color = None
+        self.show_unit = None
+        self.unit_line_break = None
         super().__init__(window_implementation=TextWindow, customization_implementation=TextCustomization,
                          row_implementation=TextRow, settings_implementation=ShowTextSettings, track_entity=True, *args,
                          **kwargs)
@@ -34,9 +46,9 @@ class ShowText(CustomizationCore):
                 self.outline_size.widget, self.outline_color.widget, self.show_unit.widget, self.unit_line_break.widget,
                 self.customization_expander.widget]
 
-    def _create_ui_elements(self) -> None:
+    def create_ui_elements(self) -> None:
         """Get all action rows."""
-        super()._create_ui_elements()
+        super().create_ui_elements()
 
         # Text position
         text_position_model = [
@@ -118,11 +130,11 @@ class ShowText(CustomizationCore):
         )
 
     @requires_initialization
-    def _set_enabled_disabled(self) -> None:
+    def set_enabled_disabled(self) -> None:
         """
         Set the active/inactive state for all rows.
         """
-        super()._set_enabled_disabled()
+        super().set_enabled_disabled()
 
         domain = self.settings.get_domain()
         is_domain_set = bool(domain)
@@ -208,9 +220,9 @@ class ShowText(CustomizationCore):
                 self.unit_line_break.widget.set_sensitive(False)
 
     @requires_initialization
-    def _on_change_entity(self, _, entity, old_entity):
+    def on_change_entity(self, _, entity, old_entity):
         self._load_attributes()
-        super()._on_change_entity(_, entity, old_entity)
+        super().on_change_entity(_, entity, old_entity)
 
     def _load_attributes(self):
         attribute = self.settings.get_attribute()
@@ -270,7 +282,7 @@ class ShowText(CustomizationCore):
         )
 
         self._load_customizations()
-        self._set_enabled_disabled()
+        self.set_enabled_disabled()
 
     def _get_domains(self) -> list[str]:
         """This class needs all domains that provide actions in Home Assistant."""

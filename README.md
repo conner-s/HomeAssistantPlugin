@@ -380,7 +380,7 @@ Currently, all planned features have been implemented! Have a suggestion? [Open 
 
 If you encounter any problems or have questions:
 
-1. 📖 Check the [documentation](#documentation) above
+1. 📖 Check the [documentation](#-documentation) above
 2. 🔍 Search [existing issues](https://github.com/gensyn/HomeAssistantPlugin/issues)
 3. 🐛 [Open a new issue](https://github.com/gensyn/HomeAssistantPlugin/issues/new) with:
    - Detailed description of the problem

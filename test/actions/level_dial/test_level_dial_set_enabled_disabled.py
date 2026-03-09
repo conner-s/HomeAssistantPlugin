@@ -23,11 +23,11 @@ class TestLevelDialSetEnabledDisabled(unittest.TestCase):
         instance = LevelDial()
         instance.settings = settings_mock
         instance.initialized = False
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         settings_mock.get_domain.assert_not_called()
 
-    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore._set_enabled_disabled')
+    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.set_enabled_disabled')
     @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
     def test_set_enabled_disabled_no_entity(self, _, super_set_mock):
         settings_mock = Mock()
@@ -59,7 +59,7 @@ class TestLevelDialSetEnabledDisabled(unittest.TestCase):
         instance.label_entry = label_entry_mock
         instance.step_scale = step_scale_mock
         instance.batch_delay_scale = batch_delay_scale_mock
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         super_set_mock.assert_called_once()
         label_entry_mock.widget.set_sensitive.assert_called_once_with(False)
@@ -68,7 +68,7 @@ class TestLevelDialSetEnabledDisabled(unittest.TestCase):
         batch_delay_scale_mock.widget.set_sensitive.assert_called_once_with(False)
         batch_delay_scale_mock.widget.set_subtitle.assert_called_once_with("No entity selected")
 
-    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore._set_enabled_disabled')
+    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.set_enabled_disabled')
     @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
     def test_set_enabled_disabled_has_entity(self, _, super_set_mock):
         settings_mock = Mock()
@@ -96,7 +96,7 @@ class TestLevelDialSetEnabledDisabled(unittest.TestCase):
         instance.label_entry = label_entry_mock
         instance.step_scale = step_scale_mock
         instance.batch_delay_scale = batch_delay_scale_mock
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         super_set_mock.assert_called_once()
         label_entry_mock.widget.set_sensitive.assert_called_once_with(True)
@@ -105,7 +105,7 @@ class TestLevelDialSetEnabledDisabled(unittest.TestCase):
         batch_delay_scale_mock.widget.set_sensitive.assert_called_once_with(True)
         batch_delay_scale_mock.widget.set_subtitle.assert_called_once_with(level_const.EMPTY_STRING)
 
-    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore._set_enabled_disabled')
+    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.set_enabled_disabled')
     @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
     def test_set_enabled_disabled_domain_only_no_entity(self, _, super_set_mock):
         """Domain set but entity empty -> disabled."""
@@ -138,7 +138,7 @@ class TestLevelDialSetEnabledDisabled(unittest.TestCase):
         instance.label_entry = label_entry_mock
         instance.step_scale = step_scale_mock
         instance.batch_delay_scale = batch_delay_scale_mock
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         label_entry_mock.widget.set_sensitive.assert_called_once_with(False)
         step_scale_mock.widget.set_sensitive.assert_called_once_with(False)

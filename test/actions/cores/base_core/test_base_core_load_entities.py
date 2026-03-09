@@ -14,7 +14,7 @@ from HomeAssistantPlugin.actions.cores.base_core.base_core import BaseCore
 
 class TestBaseCoreLoadEntities(unittest.TestCase):
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
     def test_load_entities_entity_not_in_entities(self, _, __):
         domain = "light"
@@ -46,7 +46,7 @@ class TestBaseCoreLoadEntities(unittest.TestCase):
         instance.plugin_base.backend.get_entities.assert_called_once_with(domain)
         entity_combo_mock.populate.assert_called_once_with(entities_sorted, entity, trigger_callback=False)
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
     def test_load_entities_success(self, _, __):
         domain = "light"
@@ -78,7 +78,7 @@ class TestBaseCoreLoadEntities(unittest.TestCase):
         entity_combo_mock.populate.assert_called_once_with(entities_sorted, entity, trigger_callback=False)
 
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
     def test_load_entities_with_none_entity(self, _, __):
         domain = "light"
@@ -106,7 +106,7 @@ class TestBaseCoreLoadEntities(unittest.TestCase):
 
         entity_combo_mock.populate.assert_called_once_with(entities_sorted, entity, trigger_callback=False)
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
     def test_load_entities_no_update_needed(self, _, __):
         domain = "light"
