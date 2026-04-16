@@ -2,7 +2,6 @@
 
 import json
 from ssl import CERT_NONE, SSLEOFError
-from threading import Semaphore
 from time import sleep
 from typing import Any, Callable
 
@@ -33,7 +32,6 @@ class HomeAssistantWebsocket(WebSocketApp):
         self._on_event_message = on_event_message
         self._on_connected_callback = on_connected
         self._on_close_callback = on_close
-        self._websocket_semaphore = Semaphore(1)
         self.connected = False
         self._message_id: int = 0
 
@@ -42,7 +40,7 @@ class HomeAssistantWebsocket(WebSocketApp):
         ssl_opt = {}
         if not self._verify_certificate:
             ssl_opt[backend_const.CERT_REQS] = CERT_NONE
-        super().run_forever(sslopt=ssl_opt, reconnect=backend_const.RECONNECT_INTERVAL)
+        super().run_forever(sslopt=ssl_opt)
 
     def _auth(self) -> None:
         """Authenticated with Home Assistant."""
