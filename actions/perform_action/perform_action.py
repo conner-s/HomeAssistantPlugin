@@ -113,8 +113,14 @@ class PerformAction(BaseCore):
         self._reload()
 
     @requires_initialization
-    def _on_change_action(self, _, __, ___) -> None:
+    def _on_change_action(self, _, action, old_action) -> None:
         """Execute when the action is changed."""
+        action = str(action) if action is not None else None
+        old_action = str(old_action) if old_action is not None else None
+
+        if old_action == action:
+            return
+
         self.settings.clear_parameters()
         parameters_helper.load_parameters(self)
         self._reload()
