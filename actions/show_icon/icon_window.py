@@ -7,10 +7,9 @@ from functools import partial
 from typing import Callable
 
 import gi
-
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gio
-from gi.repository.Gtk import Box, Button, FileDialog, FileFilter, Label, Orientation
+from gi.repository.Gtk import Button, FileDialog, FileFilter
 
 from HomeAssistantPlugin.actions import const as base_const
 from HomeAssistantPlugin.actions.cores.customization_core import customization_helper
@@ -36,22 +35,18 @@ class IconWindow(CustomizationWindow):
         self.check_color = self._create_check_button()
         self.check_scale = self._create_check_button()
         self.check_opacity = self._create_check_button()
-        self.check_image = self._create_check_button()
 
         label_icon = self._create_label(self.lm.get(icon_const.LABEL_ICON_ICON))
         label_color = self._create_label(self.lm.get(icon_const.LABEL_ICON_COLOR))
         label_scale = self._create_label(self.lm.get(icon_const.LABEL_ICON_SCALE))
         label_opacity = self._create_label(self.lm.get(icon_const.LABEL_ICON_OPACITY))
-        label_image = self._create_label(self.lm.get(icon_const.LABEL_ICON_IMAGE))
 
         self.icon = self._create_entry(self.check_icon)
         self.icon.set_margin_end(self.default_margin)
         self.connect_rows.append(
             partial(self.icon.connect, base_const.CONNECT_ACTIVATE, self.on_widget_changed))
-
-        self.image_entry = self._create_entry(self.check_image)
-        self.image_entry.set_hexpand(True)
-        self.image_entry.set_margin_end(self.default_margin)
+        self.connect_rows.append(
+            partial(self.icon.connect, base_const.CONNECT_CHANGED, self._on_icon_changed))
 
         browse_button = Button(label=self.lm.get(icon_const.LABEL_ICON_BROWSE))
         browse_button.set_margin_top(self.default_margin)
@@ -59,20 +54,6 @@ class IconWindow(CustomizationWindow):
         browse_button.set_margin_start(self.default_margin)
         browse_button.set_margin_end(self.default_margin)
         self.connect_rows.append(partial(browse_button.connect, base_const.CONNECT_CLICKED, self._on_browse_clicked))
-        self.connect_rows.append(partial(self.check_image.connect, "toggled", self._on_check_image_toggled))
-
-        image_box = Box()
-        image_box.append(self.image_entry)
-        image_box.append(browse_button)
-
-        image_hint_label = Label(label=self.lm.get(icon_const.LABEL_ICON_IMAGE_OVERRIDES))
-        image_hint_label.add_css_class("caption")
-        image_hint_label.add_css_class("dim-label")
-        image_hint_label.set_xalign(0)
-
-        image_col_box = Box(orientation=Orientation.VERTICAL)
-        image_col_box.append(image_box)
-        image_col_box.append(image_hint_label)
 
         self.color = self._create_color_button(self.check_color)
 
@@ -109,6 +90,7 @@ class IconWindow(CustomizationWindow):
         self.grid_fields.attach(self.check_icon, 2, 2, 1, 1)
         self.grid_fields.attach(label_icon, 3, 2, 1, 1)
         self.grid_fields.attach(self.icon, 4, 2, 1, 1)
+        self.grid_fields.attach(browse_button, 5, 2, 1, 1)
 
         self.grid_fields.attach(self.check_color, 2, 3, 1, 1)
         self.grid_fields.attach(label_color, 3, 3, 1, 1)
@@ -123,10 +105,6 @@ class IconWindow(CustomizationWindow):
         self.grid_fields.attach(label_opacity, 3, 5, 1, 1)
         self.grid_fields.attach(self.opacity, 4, 5, 1, 1)
         self.grid_fields.attach(self.opacity_entry, 5, 5, 1, 1)
-
-        self.grid_fields.attach(self.check_image, 2, 6, 1, 1)
-        self.grid_fields.attach(label_image, 3, 6, 1, 1)
-        self.grid_fields.attach(image_col_box, 4, 6, 2, 1)
 
         self._after_init()
 
@@ -148,8 +126,11 @@ class IconWindow(CustomizationWindow):
 
         super().set_current_values()
 
-        self.icon.set_text(self.current.get_icon() or icon_const.EMPTY_STRING)
-        self.check_icon.set_active(self.current.get_icon() is not None)
+        # backward compat: old customizations may have stored the path in image instead of icon
+        icon_or_image = self.current.get_icon() or self.current.get_image()
+        self.icon.set_text(icon_or_image or icon_const.EMPTY_STRING)
+        self.check_icon.set_active(icon_or_image is not None)
+        self._on_icon_changed()
 
         if self.current.get_color():
             rgba = customization_helper.convert_color_list_to_rgba(self.current.get_color())
@@ -168,59 +149,40 @@ class IconWindow(CustomizationWindow):
         self.opacity_entry.set_text(
             str(int(self.current.get_opacity() or icon_const.DEFAULT_ICON_OPACITY)))
 
-        self.image_entry.set_text(self.current.get_image() or icon_const.EMPTY_STRING)
-        self.check_image.set_active(self.current.get_image() is not None)
-        self._on_check_image_toggled()
-
     def on_add_button(self, *_, **__) -> None:
         if not super().on_add_button():
             return
 
-        if self.check_icon.get_active():
-            icon = self.icon.get_text()
-
-            if icon.startswith("mdi:"):
-                icon = icon[4:]
-
-            if icon not in self.icons:
-                self.icon.add_css_class(icon_const.ERROR)
-                return
-
-        if self.check_image.get_active() and not self.image_entry.get_text():
-            self.image_entry.add_css_class(icon_const.ERROR)
+        if self.check_icon.get_active() and not self.icon.get_text():
+            self.icon.add_css_class(icon_const.ERROR)
             return
 
         if (not self.check_icon.get_active() and not self.check_color.get_active() and not
-        self.check_scale.get_active() and not self.check_opacity.get_active() and not
-        self.check_image.get_active()):
+                self.check_scale.get_active() and not self.check_opacity.get_active()):
             self.check_icon.add_css_class(icon_const.ERROR)
             self.check_color.add_css_class(icon_const.ERROR)
             self.check_scale.add_css_class(icon_const.ERROR)
             self.check_opacity.add_css_class(icon_const.ERROR)
-            self.check_image.add_css_class(icon_const.ERROR)
             return
 
         icon = self.icon.get_text() if self.check_icon.get_active() else None
         color = self.color.get_rgba() if self.check_color.get_active() else None
         color_list = customization_helper.convert_rgba_to_color_list(color) if color else None
         scale = int(self.scale.get_value()) if self.check_scale.get_active() else None
-        opacity = int(
-            self.opacity.get_value()) if self.check_opacity.get_active() else None
-        image = self.image_entry.get_text() if self.check_image.get_active() else None
+        opacity = int(self.opacity.get_value()) if self.check_opacity.get_active() else None
 
         self.callback(customization=IconCustomization(
             attribute=self.condition_attribute.get_selected_item().get_string(),
             operator=self.operator.get_selected_item().value,
             value=self.entry_value.get_text(), icon=icon, color=color_list, scale=scale,
-            opacity=opacity, image=image), index=self.index)
+            opacity=opacity, image=None), index=self.index)
 
         self.destroy()
 
-    def _on_check_image_toggled(self, *_) -> None:
-        has_image = self.check_image.get_active()
-        for widget in [self.check_icon, self.icon, self.check_color, self.color,
-                       self.check_scale, self.scale, self.scale_entry,
-                       self.check_opacity, self.opacity, self.opacity_entry]:
+    def _on_icon_changed(self, *_) -> None:
+        icon_value = self.icon.get_text()
+        has_image = bool(icon_value) and icon_value not in icon_helper.MDI_ICONS
+        for widget in [self.check_color, self.color, self.check_opacity, self.opacity, self.opacity_entry]:
             widget.set_sensitive(not has_image)
 
     def _on_browse_clicked(self, *_) -> None:
@@ -237,8 +199,8 @@ class IconWindow(CustomizationWindow):
         dialog.set_filters(filters)
         dialog.set_default_filter(filter_images)
 
-        if self.image_entry.get_text():
-            current_dir = os.path.dirname(self.image_entry.get_text())
+        if self.icon.get_text():
+            current_dir = os.path.dirname(self.icon.get_text())
             if os.path.isdir(current_dir):
                 dialog.set_initial_folder(Gio.File.new_for_path(current_dir))
 
@@ -248,8 +210,9 @@ class IconWindow(CustomizationWindow):
         try:
             file = dialog.open_finish(result)
             if file:
-                self.image_entry.set_text(file.get_path())
-                self.check_image.set_active(True)
+                self.icon.set_text(file.get_path())
+                self.check_icon.set_active(True)
+                self._on_icon_changed()
         except Exception:
             pass
 
@@ -261,5 +224,3 @@ class IconWindow(CustomizationWindow):
         self.check_color.remove_css_class(icon_const.ERROR)
         self.check_scale.remove_css_class(icon_const.ERROR)
         self.check_opacity.remove_css_class(icon_const.ERROR)
-        self.image_entry.remove_css_class(icon_const.ERROR)
-        self.check_image.remove_css_class(icon_const.ERROR)

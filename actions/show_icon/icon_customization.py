@@ -28,9 +28,9 @@ class IconCustomization(Customization):
         return cls(customization[customization_const.CONDITION][customization_const.ATTRIBUTE],
                    customization[customization_const.CONDITION][customization_const.OPERATOR],
                    customization[customization_const.CONDITION][customization_const.VALUE],
-                   customization[icon_const.CUSTOM_ICON], customization[icon_const.CUSTOM_COLOR],
-                   customization[icon_const.CUSTOM_SCALE], customization[icon_const.CUSTOM_OPACITY],
-                   customization[icon_const.CUSTOM_IMAGE])
+                   customization.get(icon_const.CUSTOM_ICON), customization.get(icon_const.CUSTOM_COLOR),
+                   customization.get(icon_const.CUSTOM_SCALE), customization.get(icon_const.CUSTOM_OPACITY),
+                   customization.get(icon_const.CUSTOM_IMAGE))
 
     def get_icon(self) -> str:
         """

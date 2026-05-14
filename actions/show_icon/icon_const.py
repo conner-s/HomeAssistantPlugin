@@ -13,12 +13,10 @@ SETTING_ICON = "icon"
 SETTING_COLOR = "color"
 SETTING_SCALE = "scale"
 SETTING_OPACITY = "opacity"
-SETTING_IMAGE = "image"
 SETTING_ICON_ICON = f"{SETTING_ICON}.{SETTING_ICON}"
 SETTING_ICON_COLOR = f"{SETTING_ICON}.{SETTING_COLOR}"
 SETTING_ICON_SCALE = f"{SETTING_ICON}.{SETTING_SCALE}"
 SETTING_ICON_OPACITY = f"{SETTING_ICON}.{SETTING_OPACITY}"
-SETTING_ICON_IMAGE = f"{SETTING_ICON}.{SETTING_IMAGE}"
 
 DEFAULT_ICON_COLOR = [237, 255, 26, 255]
 DEFAULT_ICON_SCALE = 80
@@ -36,8 +34,8 @@ CUSTOM_OPACITY = "opacity"
 CUSTOM_IMAGE = "image"
 
 LABEL_ICON_IMAGE = "actions.home_assistant.icon.image.label"
-LABEL_ICON_IMAGE_OVERRIDES = "actions.home_assistant.icon.image_overrides.label"
 LABEL_ICON_BROWSE = "actions.home_assistant.icon.browse.label"
+LABEL_ICON_NOT_SUPPORTED_FOR_IMAGES = "actions.home_assistant.icon.not_supported_for_images.label"
 
 MDI_SVG_JSON = "assets/mdi-svg.json"
 ICON_COLOR_RED = "#ff0000"

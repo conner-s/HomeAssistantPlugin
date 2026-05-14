@@ -29,8 +29,8 @@
     "actions.home_assistant.icon.scale.label": "Scale:",
     "actions.home_assistant.icon.custom_icon.label": "Customize:",
     "actions.home_assistant.icon.image.label": "Image:",
-    "actions.home_assistant.icon.image_overrides.label": "Overrides icon, color, scale and opacity",
     "actions.home_assistant.icon.browse.label": "Browse...",
+    "actions.home_assistant.icon.not_supported_for_images.label": "Not supported for images",
     "actions.home_assistant.icon.no_entity.label": "No entity selected",
 
     "actions.home_assistant.text.show_text.label": "Show text:",

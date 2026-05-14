@@ -46,10 +46,13 @@ def _get_icon_settings(state: dict, settings: ShowIconSettings) -> tuple[str, st
     color = settings.get_color()
     scale = settings.get_scale()
     opacity = settings.get_opacity()
-    image = settings.get_image() or None
+    image = None
 
-    if settings.get_icon() in MDI_ICONS.keys():
-        name = settings.get_icon()
+    icon_value = settings.get_icon()
+    if icon_value in MDI_ICONS:
+        name = icon_value
+    elif icon_value:
+        image = icon_value
 
     #
     # Begin custom icon
@@ -125,7 +128,14 @@ def _replace_values(name: str, color: str, scale: float, opacity: str, image: st
     ret_image = image
 
     if customization.get_icon() is not None:
-        ret_name = customization.get_icon()
+        icon_val = customization.get_icon()
+        if icon_val in MDI_ICONS:
+            ret_name = icon_val
+        else:
+            ret_image = icon_val
+
+    if customization.get_image() is not None:
+        ret_image = customization.get_image()
 
     if customization.get_color() is not None:
         ret_color = customization.get_color()

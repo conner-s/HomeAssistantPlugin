@@ -10,7 +10,6 @@ DEFAULT_SETTINGS = {
     icon_const.SETTING_COLOR: icon_const.DEFAULT_ICON_COLOR,
     icon_const.SETTING_SCALE: icon_const.DEFAULT_ICON_SCALE,
     icon_const.SETTING_OPACITY: icon_const.DEFAULT_ICON_OPACITY,
-    icon_const.SETTING_IMAGE: icon_const.EMPTY_STRING,
     customization_const.SETTING_CUSTOMIZATIONS: []
 }
 
@@ -67,9 +66,3 @@ class ShowIconSettings(CustomizationSettings):
         """
         return int(self._action.get_settings()[icon_const.SETTING_ICON][icon_const.SETTING_OPACITY])
 
-    def get_image(self) -> str:
-        """
-        Get the image path.
-        :return: the image path
-        """
-        return self._action.get_settings()[icon_const.SETTING_ICON][icon_const.SETTING_IMAGE]
