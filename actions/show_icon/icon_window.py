@@ -9,7 +9,7 @@ from typing import Callable
 import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gio
-from gi.repository.Gtk import Box, Button, FileDialog, FileFilter
+from gi.repository.Gtk import Box, Button, FileDialog, FileFilter, Label, Orientation
 
 from HomeAssistantPlugin.actions import const as base_const
 from HomeAssistantPlugin.actions.cores.customization_core import customization_helper
@@ -58,10 +58,20 @@ class IconWindow(CustomizationWindow):
         browse_button.set_margin_start(self.default_margin)
         browse_button.set_margin_end(self.default_margin)
         self.connect_rows.append(partial(browse_button.connect, base_const.CONNECT_CLICKED, self._on_browse_clicked))
+        self.connect_rows.append(partial(self.check_image.connect, "toggled", self._on_check_image_toggled))
 
         image_box = Box()
         image_box.append(self.image_entry)
         image_box.append(browse_button)
+
+        image_hint_label = Label(label=self.lm.get(icon_const.LABEL_ICON_IMAGE_OVERRIDES))
+        image_hint_label.add_css_class("caption")
+        image_hint_label.add_css_class("dim-label")
+        image_hint_label.set_xalign(0)
+
+        image_col_box = Box(orientation=Orientation.VERTICAL)
+        image_col_box.append(image_box)
+        image_col_box.append(image_hint_label)
 
         self.color = self._create_color_button(self.check_color)
 
@@ -115,7 +125,7 @@ class IconWindow(CustomizationWindow):
 
         self.grid_fields.attach(self.check_image, 2, 6, 1, 1)
         self.grid_fields.attach(label_image, 3, 6, 1, 1)
-        self.grid_fields.attach(image_box, 4, 6, 2, 1)
+        self.grid_fields.attach(image_col_box, 4, 6, 2, 1)
 
         self._after_init()
 
@@ -159,6 +169,7 @@ class IconWindow(CustomizationWindow):
 
         self.image_entry.set_text(self.current.get_custom_image() or icon_const.EMPTY_STRING)
         self.check_image.set_active(self.current.get_custom_image() is not None)
+        self._on_check_image_toggled()
 
     def on_add_button(self, *_, **__) -> None:
         if not super().on_add_button():
@@ -203,6 +214,13 @@ class IconWindow(CustomizationWindow):
             opacity=opacity, custom_image=custom_image), index=self.index)
 
         self.destroy()
+
+    def _on_check_image_toggled(self, *_) -> None:
+        has_image = self.check_image.get_active()
+        for widget in [self.check_icon, self.icon, self.check_color, self.color,
+                       self.check_scale, self.scale, self.scale_entry,
+                       self.check_opacity, self.opacity, self.opacity_entry]:
+            widget.set_sensitive(not has_image)
 
     def _on_browse_clicked(self, *_) -> None:
         dialog = FileDialog()

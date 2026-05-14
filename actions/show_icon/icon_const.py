@@ -33,7 +33,10 @@ CUSTOM_SCALE = "scale"
 CUSTOM_OPACITY = "opacity"
 CUSTOM_IMAGE = "custom_image"
 
+SETTING_ICON_CUSTOM_IMAGE = f"{SETTING_ICON}.{CUSTOM_IMAGE}"
+
 LABEL_ICON_IMAGE = "actions.home_assistant.icon.image.label"
+LABEL_ICON_IMAGE_OVERRIDES = "actions.home_assistant.icon.image_overrides.label"
 LABEL_ICON_BROWSE = "actions.home_assistant.icon.browse.label"
 
 MDI_SVG_JSON = "assets/mdi-svg.json"

@@ -46,7 +46,7 @@ def _get_icon_settings(state: dict, settings: ShowIconSettings) -> tuple[str, st
     color = settings.get_color()
     scale = settings.get_scale()
     opacity = settings.get_opacity()
-    custom_image = None
+    custom_image = settings.get_custom_image() or None
 
     if settings.get_icon() in MDI_ICONS.keys():
         name = settings.get_icon()

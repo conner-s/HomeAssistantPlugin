@@ -2,6 +2,13 @@
 The module for the Home Assistant action that is loaded in StreamController.
 """
 
+import os
+
+import gi
+gi.require_version("Gtk", "4.0")
+from gi.repository import Gio
+from gi.repository.Gtk import Align, Button, FileDialog, FileFilter
+
 from HomeAssistantPlugin.actions.cores.base_core.base_core import requires_initialization
 from HomeAssistantPlugin.actions.cores.customization_core.customization_core import CustomizationCore
 from HomeAssistantPlugin.actions.show_icon import icon_const, icon_helper
@@ -24,6 +31,7 @@ class ShowIcon(CustomizationCore):
         self.color = None
         self.scale = None
         self.opacity = None
+        self.custom_image = None
         super().__init__(window_implementation=IconWindow, customization_implementation=IconCustomization,
                          row_implementation=IconRow, settings_implementation=ShowIconSettings, track_entity=True, *args,
                          **kwargs)
@@ -31,7 +39,7 @@ class ShowIcon(CustomizationCore):
     def get_config_rows(self) -> list:
         """Get the rows to be displayed in the UI."""
         return [self.domain_combo.widget, self.entity_combo.widget, self.icon.widget, self.color.widget,
-                self.scale.widget, self.opacity.widget, self.customization_expander.widget]
+                self.scale.widget, self.opacity.widget, self.custom_image.widget, self.customization_expander.widget]
 
     def create_ui_elements(self) -> None:
         """Get all action rows."""
@@ -63,6 +71,19 @@ class ShowIcon(CustomizationCore):
             can_reset=False, complex_var_name=True
         )
 
+        image_label = self.lm.get(icon_const.LABEL_ICON_IMAGE).rstrip(":")
+        image_overrides = self.lm.get(icon_const.LABEL_ICON_IMAGE_OVERRIDES)
+        self.custom_image: EntryRow = EntryRow(
+            self, icon_const.SETTING_ICON_CUSTOM_IMAGE, icon_const.EMPTY_STRING,
+            title=f"{image_label} ({image_overrides}):", on_change=self._reload,
+            can_reset=True, complex_var_name=True
+        )
+
+        browse_button = Button(label=self.lm.get(icon_const.LABEL_ICON_BROWSE))
+        browse_button.set_valign(Align.CENTER)
+        browse_button.connect("clicked", self._on_browse_clicked)
+        self.custom_image.widget.add_suffix(browse_button)
+
     @requires_initialization
     def set_enabled_disabled(self) -> None:
         """
@@ -87,16 +108,22 @@ class ShowIcon(CustomizationCore):
 
             self.opacity.widget.set_sensitive(False)
             self.opacity.widget.set_subtitle(self.lm.get(icon_const.LABEL_ICON_NO_ENTITY))
-        else:
-            self.icon.widget.set_sensitive(True)
 
-            self.color.widget.set_sensitive(True)
+            self.custom_image.widget.set_sensitive(False)
+        else:
+            self.custom_image.widget.set_sensitive(True)
+
+            has_image = bool(self.settings.get_custom_image())
+
+            self.icon.widget.set_sensitive(not has_image)
+
+            self.color.widget.set_sensitive(not has_image)
             self.color.widget.set_subtitle(icon_const.EMPTY_STRING)
 
-            self.scale.widget.set_sensitive(True)
+            self.scale.widget.set_sensitive(not has_image)
             self.scale.widget.set_subtitle(icon_const.EMPTY_STRING)
 
-            self.opacity.widget.set_sensitive(True)
+            self.opacity.widget.set_sensitive(not has_image)
             self.opacity.widget.set_subtitle(icon_const.EMPTY_STRING)
 
     def refresh(self, state: dict = None) -> None:
@@ -122,6 +149,37 @@ class ShowIcon(CustomizationCore):
 
         self._load_customizations()
         self.set_enabled_disabled()
+
+    def _on_browse_clicked(self, *_) -> None:
+        dialog = FileDialog()
+        dialog.set_title(self.lm.get(icon_const.LABEL_ICON_IMAGE))
+
+        filter_images = FileFilter()
+        filter_images.set_name("Images")
+        for mime in ("image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"):
+            filter_images.add_mime_type(mime)
+
+        filters = Gio.ListStore.new(FileFilter)
+        filters.append(filter_images)
+        dialog.set_filters(filters)
+        dialog.set_default_filter(filter_images)
+
+        current_path = self.custom_image.widget.get_text()
+        if current_path:
+            current_dir = os.path.dirname(current_path)
+            if os.path.isdir(current_dir):
+                dialog.set_initial_folder(Gio.File.new_for_path(current_dir))
+
+        dialog.open(None, None, self._on_file_chosen)
+
+    def _on_file_chosen(self, dialog, result) -> None:
+        try:
+            file = dialog.open_finish(result)
+            if file:
+                self.custom_image.widget.set_text(file.get_path())
+                self._reload()
+        except Exception:
+            pass
 
     def _get_domains(self) -> list[str]:
         """This class needs all domains that provide actions in Home Assistant."""
