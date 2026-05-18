@@ -133,7 +133,7 @@ class TestIconWindow(unittest.TestCase):
 
     @patch(
         'HomeAssistantPlugin.actions.cores.customization_core.customization_window.CustomizationWindow.on_add_button')
-    def test_on_add_button_icon_not_valid(self, super_on_add_button_mock):
+    def test_on_add_button_icon_checked_but_empty(self, super_on_add_button_mock):
         super_on_add_button_mock.return_value = True
 
         instance = IconWindow.__new__(IconWindow)
