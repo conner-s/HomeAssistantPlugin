@@ -10,6 +10,7 @@ absolute_plugin_path = str(Path(__file__).parent.parent.parent.parent.parent.abs
 sys.path.insert(0, absolute_plugin_path)
 
 from HomeAssistantPlugin.actions.show_icon import icon_const
+from HomeAssistantPlugin.actions.show_icon import icon_helper
 from HomeAssistantPlugin.actions.show_icon.icon_action import ShowIcon
 from HomeAssistantPlugin.actions.show_icon.icon_customization import IconCustomization
 from HomeAssistantPlugin.actions.show_icon.icon_row import IconRow
@@ -68,9 +69,12 @@ class TestShowIcon(unittest.TestCase):
     @patch('HomeAssistantPlugin.actions.show_icon.icon_action.EntryRow')
     @patch('HomeAssistantPlugin.actions.show_icon.icon_action.ColorButtonRow')
     @patch('HomeAssistantPlugin.actions.show_icon.icon_action.ScaleRow')
-    def testcreate_ui_elements(self, scale_row_mock, color_button_row_mock, entry_row_mock, super_create_ui_elements_mock):
+    @patch('HomeAssistantPlugin.actions.show_icon.icon_action.Button')
+    def testcreate_ui_elements(self, button_mock, scale_row_mock, color_button_row_mock, entry_row_mock, super_create_ui_elements_mock):
         instance = ShowIcon.__new__(ShowIcon)
         instance._reload = Mock()
+        instance.lm = Mock()
+        instance.lm.get.return_value = "Browse"
 
         instance.create_ui_elements()
 
@@ -162,10 +166,12 @@ class TestShowIcon(unittest.TestCase):
         instance.settings = Mock()
         instance.settings.get_domain.return_value = "domain"
         instance.settings.get_entity.return_value = "entity"
+        instance.settings.get_icon.return_value = next(iter(icon_helper.MDI_ICONS))
         instance.icon = Mock()
         instance.color = Mock()
         instance.scale = Mock()
         instance.opacity = Mock()
+        instance.lm = Mock()
 
         instance.set_enabled_disabled()
 
