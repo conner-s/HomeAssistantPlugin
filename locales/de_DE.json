@@ -28,6 +28,9 @@
     "actions.home_assistant.icon.opacity.label": "Deckkraft:",
     "actions.home_assistant.icon.scale.label": "Größe:",
     "actions.home_assistant.icon.custom_icon.label": "Anpassen:",
+    "actions.home_assistant.icon.image.label": "Bild:",
+    "actions.home_assistant.icon.browse.label": "Durchsuchen...",
+    "actions.home_assistant.icon.only_supported_for_icons.label": "Nur für Icons unterstützt",
     "actions.home_assistant.icon.no_entity.label": "Keine Entität ausgewählt",
 
     "actions.home_assistant.text.show_text.label": "Text anzeigen:",

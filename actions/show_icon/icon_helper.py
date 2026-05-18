@@ -29,6 +29,10 @@ def get_icon(state: dict, settings: ShowIconSettings, is_connected: bool) -> tup
 
     name, color, scale, opacity = _get_icon_settings(state, settings)
 
+    if name not in MDI_ICONS:
+        # color and opacity only have an effect on icons
+        return name, scale
+
     # convert RGB color to hex
     color = customization_helper.convert_color_list_to_hex(color)
 
@@ -39,13 +43,10 @@ def get_icon(state: dict, settings: ShowIconSettings, is_connected: bool) -> tup
 
 def _get_icon_settings(state: dict, settings: ShowIconSettings) -> tuple[str, str, float, float]:
     # default value for the icon is the icon set in HA
-    name = state.get(icon_const.ATTRIBUTES, {}).get(icon_const.ATTRIBUTE_ICON, icon_const.EMPTY_STRING)
+    name = settings.get_icon() or state.get(icon_const.ATTRIBUTES, {}).get(icon_const.ATTRIBUTE_ICON, icon_const.EMPTY_STRING).replace("mdi:", icon_const.EMPTY_STRING)
     color = settings.get_color()
     scale = settings.get_scale()
     opacity = settings.get_opacity()
-
-    if settings.get_icon() in MDI_ICONS.keys():
-        name = settings.get_icon()
 
     #
     # Begin custom icon
@@ -88,8 +89,7 @@ def _get_icon_settings(state: dict, settings: ShowIconSettings) -> tuple[str, st
                 or (operator == "<=" and value <= custom_icon_value)
                 or (operator == ">" and value > custom_icon_value)
                 or (operator == ">=" and value >= custom_icon_value)):
-            name, color, scale, opacity = _replace_values(name, color, scale, opacity,
-                                                          customization)
+            name, color, scale, opacity = _replace_values(name, color, scale, opacity, customization)
 
     #
     # End custom icon

@@ -1,8 +1,10 @@
 """The module for the Home Assistant action that is loaded in StreamController."""
 
 import gi
-from GtkHelper.GenerativeUI.ComboRow import ComboRow
 from HomeAssistantPlugin.actions import const
+from HomeAssistantPlugin.actions.cores.base_core.migrate import migrate_settings
+
+from GtkHelper.GenerativeUI.ComboRow import ComboRow
 from src.backend.PluginManager.ActionCore import ActionCore
 
 gi.require_version('Gtk', '4.0')
@@ -48,6 +50,7 @@ class BaseCore(ActionCore):
 
     def on_ready(self) -> None:
         """Set up action when StreamController has finished loading."""
+        migrate_settings(self)
         self.settings = self.settings_implementation(self)
         self.initialized = True
 

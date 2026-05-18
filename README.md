@@ -58,11 +58,13 @@
   - Disable `key_down` by mapping it to `None`
 
 ### 🎨 Show an Icon
-- Display entity icons or custom icons from [Material Design Icons](https://pictogrammers.com/library/mdi/)
+- Display entity icons or custom icons from [Material Design Icons](https://pictogrammers.com/library/mdi/) as well as images and GIFs
 - Customize icon appearance:
   - 🎨 Color
   - 📏 Scale
   - 🌫️ Opacity
+- Customize image appearance:
+  - 📏 Scale
 - **Dynamic customization** based on state or attribute values
 - Automatic updates when entity state changes
 
