@@ -19,6 +19,8 @@ class CustomizationCore(BaseCore):
     def __init__(self, window_implementation, customization_implementation, row_implementation, *args, **kwargs):
         # Must be set before create_ui_elements in BaseCore is called
         self.customization_expander = None
+        # Flag set during on_remove() to prevent _load_customizations() from
+        # adding child widgets to the expander while it is detached from the UI.
         self._clearing = False
         super().__init__(*args, **kwargs)
         self.window_implementation = window_implementation
