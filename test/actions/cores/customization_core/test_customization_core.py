@@ -320,6 +320,7 @@ class TestCustomizationCore(unittest.TestCase):
     def test_load_customizations(self):
         instance = CustomizationCore.__new__(CustomizationCore)
         instance.customization_expander = Mock()
+        instance._clearing = False
         instance._get_attributes = Mock()
         instance._get_attributes.return_value = ["attr1", "attr2"]
         instance.plugin_base = Mock()
