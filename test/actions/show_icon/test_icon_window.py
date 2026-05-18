@@ -24,8 +24,9 @@ class TestIconWindow(unittest.TestCase):
     @patch.object(IconWindow, "_create_scale")
     @patch.object(IconWindow, "_create_scale_entry")
     @patch.object(IconWindow, "_create_label")
+    @patch('HomeAssistantPlugin.actions.show_icon.icon_window.Button')
     def test_init(self, create_label_mock, create_scale_entry_mock, create_scale_mock, create_color_button_mock,
-                  create_entry_mock, create_check_button_mock, after_init_mock, set_title_mock,
+                  create_entry_mock, create_check_button_mock, after_init_mock, set_title_mock, button_mock,
                   customization_window_init_mock):
         lm = Mock()
         lm.get.return_value = "Test Title"
@@ -51,7 +52,7 @@ class TestIconWindow(unittest.TestCase):
         customization_window_init_mock.assert_called_once_with(instance, lm, attributes, callback, current,
                                                                index)  # with instance because of autospec
         set_title_mock.assert_called_once_with("Test Title")
-        self.assertEqual(14, instance.grid_fields.attach.call_count)
+        self.assertEqual(15, instance.grid_fields.attach.call_count)
         after_init_mock.assert_called_once()
 
     @patch(
