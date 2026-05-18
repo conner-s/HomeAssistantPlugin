@@ -43,7 +43,7 @@ def get_icon(state: dict, settings: ShowIconSettings, is_connected: bool) -> tup
 
 def _get_icon_settings(state: dict, settings: ShowIconSettings) -> tuple[str, str, float, float]:
     # default value for the icon is the icon set in HA
-    name = state.get(icon_const.ATTRIBUTES, {}).get(icon_const.ATTRIBUTE_ICON, icon_const.EMPTY_STRING) or settings.get_icon()
+    name = settings.get_icon() or state.get(icon_const.ATTRIBUTES, {}).get(icon_const.ATTRIBUTE_ICON, icon_const.EMPTY_STRING).replace("mdi:", icon_const.EMPTY_STRING)
     color = settings.get_color()
     scale = settings.get_scale()
     opacity = settings.get_opacity()
