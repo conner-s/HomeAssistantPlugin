@@ -25,8 +25,8 @@ class TestIconWindow(unittest.TestCase):
     @patch.object(IconWindow, "_create_scale_entry")
     @patch.object(IconWindow, "_create_label")
     @patch('HomeAssistantPlugin.actions.show_icon.icon_window.Button')
-    def test_init(self, create_label_mock, create_scale_entry_mock, create_scale_mock, create_color_button_mock,
-                  create_entry_mock, create_check_button_mock, after_init_mock, set_title_mock, button_mock,
+    def test_init(self, button_mock, create_label_mock, create_scale_entry_mock, create_scale_mock, create_color_button_mock,
+                  create_entry_mock, create_check_button_mock, after_init_mock, set_title_mock,
                   customization_window_init_mock):
         lm = Mock()
         lm.get.return_value = "Test Title"
@@ -140,8 +140,7 @@ class TestIconWindow(unittest.TestCase):
         instance.check_icon = Mock()
         instance.check_icon.get_active.return_value = True
         instance.icon = Mock()
-        instance.icon.get_text.return_value = "mdi:home"
-        instance.icons = ["not_home"]
+        instance.icon.get_text.return_value = ""
         instance.on_add_button()
 
         super_on_add_button_mock.assert_called_once()
