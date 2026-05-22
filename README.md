@@ -398,12 +398,11 @@ Contributions are welcome! Feel free to:
 - 📝 Improve documentation
 - 🔧 Submit pull requests
 
+
 ---
 
-<div align="center">
+## ⭐ Support
 
-**Made with ❤️ for the Home Assistant and StreamController communities**
+If you find HomeAssistantPlugin useful, please consider giving it a star on GitHub! It helps others discover the project. 
 
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github)](https://github.com/gensyn/HomeAssistantPlugin)
-
-</div>
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/M5G61ZZY8D)
