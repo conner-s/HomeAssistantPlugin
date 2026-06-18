@@ -52,6 +52,10 @@ class TestLevelDialSetEnabledDisabled(unittest.TestCase):
         batch_delay_scale_mock.widget.set_sensitive = Mock()
         batch_delay_scale_mock.widget.set_subtitle = Mock()
 
+        unit_combo_mock = Mock()
+        unit_combo_mock.widget = Mock()
+        unit_combo_mock.widget.set_sensitive = Mock()
+
         instance = LevelDial()
         instance.settings = settings_mock
         instance.initialized = True
@@ -59,6 +63,7 @@ class TestLevelDialSetEnabledDisabled(unittest.TestCase):
         instance.label_entry = label_entry_mock
         instance.step_scale = step_scale_mock
         instance.batch_delay_scale = batch_delay_scale_mock
+        instance.unit_combo = unit_combo_mock
         instance.set_enabled_disabled()
 
         super_set_mock.assert_called_once()
@@ -89,6 +94,10 @@ class TestLevelDialSetEnabledDisabled(unittest.TestCase):
         batch_delay_scale_mock.widget.set_sensitive = Mock()
         batch_delay_scale_mock.widget.set_subtitle = Mock()
 
+        unit_combo_mock = Mock()
+        unit_combo_mock.widget = Mock()
+        unit_combo_mock.widget.set_sensitive = Mock()
+
         instance = LevelDial()
         instance.settings = settings_mock
         instance.initialized = True
@@ -96,6 +105,7 @@ class TestLevelDialSetEnabledDisabled(unittest.TestCase):
         instance.label_entry = label_entry_mock
         instance.step_scale = step_scale_mock
         instance.batch_delay_scale = batch_delay_scale_mock
+        instance.unit_combo = unit_combo_mock
         instance.set_enabled_disabled()
 
         super_set_mock.assert_called_once()
@@ -127,6 +137,10 @@ class TestLevelDialSetEnabledDisabled(unittest.TestCase):
         batch_delay_scale_mock.widget.set_sensitive = Mock()
         batch_delay_scale_mock.widget.set_subtitle = Mock()
 
+        unit_combo_mock = Mock()
+        unit_combo_mock.widget = Mock()
+        unit_combo_mock.widget.set_sensitive = Mock()
+
         locale_manager = {
             level_const.LABEL_LEVEL_NO_ENTITY: "No entity selected"
         }
@@ -138,7 +152,32 @@ class TestLevelDialSetEnabledDisabled(unittest.TestCase):
         instance.label_entry = label_entry_mock
         instance.step_scale = step_scale_mock
         instance.batch_delay_scale = batch_delay_scale_mock
+        instance.unit_combo = unit_combo_mock
         instance.set_enabled_disabled()
 
         label_entry_mock.widget.set_sensitive.assert_called_once_with(False)
         step_scale_mock.widget.set_sensitive.assert_called_once_with(False)
+
+    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.set_enabled_disabled')
+    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
+    def test_unit_combo_enabled_only_for_temperature_domains(self, _, __):
+        """The temperature-unit dropdown is sensitive for climate but not for light."""
+        def make(domain, entity):
+            settings_mock = Mock()
+            settings_mock.get_domain = Mock(return_value=domain)
+            settings_mock.get_entity = Mock(return_value=entity)
+            instance = LevelDial()
+            instance.settings = settings_mock
+            instance.initialized = True
+            instance.lm = {level_const.LABEL_LEVEL_NO_ENTITY: ""}
+            instance.label_entry = Mock()
+            instance.step_scale = Mock()
+            instance.batch_delay_scale = Mock()
+            instance.unit_combo = Mock()
+            instance.set_enabled_disabled()
+            return instance
+
+        make("climate", "climate.living_room").unit_combo.widget.set_sensitive \
+            .assert_called_once_with(True)
+        make("light", "light.desk").unit_combo.widget.set_sensitive \
+            .assert_called_once_with(False)

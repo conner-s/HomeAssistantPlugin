@@ -73,6 +73,7 @@
     "actions.home_assistant.level.step.label": "Step size:",
     "actions.home_assistant.level.label.label": "Display name:",
     "actions.home_assistant.level.batch_delay.label": "Batch delay (ms):",
+    "actions.home_assistant.level.unit.label": "Temperature unit:",
     "actions.home_assistant.level.no_entity.label": "No entity selected",
     "actions.home_assistant.level.icon.label": "Icon:",
     "actions.home_assistant.level.color.label": "Color:",

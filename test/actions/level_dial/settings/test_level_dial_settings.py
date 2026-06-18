@@ -203,6 +203,7 @@ class TestLevelDialSettingsInit(unittest.TestCase):
                 level_const.SETTING_STEP: level_const.DEFAULT_STEP,
                 level_const.SETTING_LABEL: level_const.DEFAULT_LABEL,
                 level_const.SETTING_BATCH_DELAY: level_const.DEFAULT_BATCH_DELAY,
+                level_const.SETTING_UNIT: level_const.DEFAULT_UNIT,
             },
         }
 

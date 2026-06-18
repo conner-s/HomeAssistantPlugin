@@ -25,6 +25,16 @@ SETTING_BATCH_DELAY = "batch_delay"
 SETTING_LEVEL_BATCH_DELAY = f"{SETTING_LEVEL}.{SETTING_BATCH_DELAY}"
 LABEL_LEVEL_BATCH_DELAY = "actions.home_assistant.level.batch_delay.label"
 
+# Temperature unit display (climate). "Auto" follows Home Assistant's own unit.
+SETTING_UNIT = "unit"
+SETTING_LEVEL_UNIT = f"{SETTING_LEVEL}.{SETTING_UNIT}"
+LABEL_LEVEL_UNIT = "actions.home_assistant.level.unit.label"
+UNIT_AUTO = "Auto"
+UNIT_CELSIUS = "Celsius"
+UNIT_FAHRENHEIT = "Fahrenheit"
+UNIT_OPTIONS = [UNIT_AUTO, UNIT_CELSIUS, UNIT_FAHRENHEIT]
+DEFAULT_UNIT = UNIT_AUTO
+
 # Icon colors (hex)
 COLOR_ON = "#ffdd00"
 COLOR_OFF = "#666666"
@@ -80,5 +90,31 @@ DOMAIN_CONFIGS = {
         "set_param": "volume_level",
         "toggle_service": "media_play_pause",
         "fallback_icon": "speaker",
+    },
+    "climate": {
+        "level_attr": "temperature",      # writable target temperature
+        "level_min": 7,                   # fallback if min_temp attr absent
+        "level_max": 35,                  # fallback if max_temp attr absent
+        "level_min_attr": "min_temp",     # read dynamic min from attributes
+        "level_max_attr": "max_temp",     # read dynamic max from attributes
+        "set_service": "set_temperature",
+        "set_param": "temperature",
+        # heat_cool / auto modes have no single setpoint — they use a low/high band.
+        "range_low_attr": "target_temp_low",
+        "range_high_attr": "target_temp_high",
+        "range_low_param": "target_temp_low",
+        "range_high_param": "target_temp_high",
+        "range_states": ["heat_cool", "auto"],  # hvac states that use the band
+        "is_temperature": True,                 # eligible for the °C/°F display setting
+        "value_step_attr": "target_temp_step",  # quantize result to this step
+        "value_step": 0.5,                # fallback step when attr absent
+        "display_value": True,            # show absolute value, not percent
+        "display_suffix": "°",            # appended to displayed value
+        "toggle_service": None,           # no plain toggle; short press cycles fan modes
+        "cycle_attr": "fan_mode",         # current selection attribute
+        "cycle_options_attr": "fan_modes",  # list of selectable options
+        "cycle_service": "set_fan_mode",  # service to set the selection
+        "cycle_param": "fan_mode",        # param name for the service
+        "fallback_icon": "thermostat",
     },
 }

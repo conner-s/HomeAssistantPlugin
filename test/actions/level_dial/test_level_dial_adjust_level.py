@@ -14,12 +14,13 @@ from HomeAssistantPlugin.actions.level_dial.level_dial import LevelDial
 
 class TestLevelDialAdjustLevel(unittest.TestCase):
 
-    def _make_instance(self, _, entity, step, state, batch_delay=0):
+    def _make_instance(self, _, entity, step, state, batch_delay=0, unit="Auto"):
         """Helper to create a LevelDial with mocked dependencies."""
         settings_mock = Mock()
         settings_mock.get_entity = Mock(return_value=entity)
         settings_mock.get_step = Mock(return_value=step)
         settings_mock.get_batch_delay = Mock(return_value=batch_delay)
+        settings_mock.get_unit = Mock(return_value=unit)
 
         backend_mock = Mock()
         backend_mock.get_entity = Mock(return_value=state)
@@ -256,6 +257,172 @@ class TestLevelDialAdjustLevel(unittest.TestCase):
         self.assertEqual(args[1], "set_cover_position")
         self.assertEqual(args[2], "cover.garage")
         self.assertEqual(args[3]["position"], 60)
+
+    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
+    def test_adjust_level_climate_cw(self, mock_init):
+        """Climate adjusts target temperature using dynamic min/max from attributes."""
+        instance, backend = self._make_instance(
+            mock_init,
+            entity="climate.living_room",
+            step=10,
+            state={"state": "heat", "attributes": {
+                "temperature": 21, "min_temp": 7, "max_temp": 35, "target_temp_step": 0.5
+            }}
+        )
+
+        instance._adjust_level(1)
+
+        backend.perform_action.assert_called_once()
+        args = backend.perform_action.call_args[0]
+        self.assertEqual(args[0], "climate")
+        self.assertEqual(args[1], "set_temperature")
+        self.assertEqual(args[2], "climate.living_room")
+        # 21 is 50% of 7..35; +10% -> 60% -> 7 + 0.6*28 = 23.8 -> snap to 0.5 -> 24.0
+        self.assertEqual(args[3]["temperature"], 24.0)
+
+    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
+    def test_adjust_level_climate_ccw(self, mock_init):
+        """Climate CCW lowers the target temperature."""
+        instance, backend = self._make_instance(
+            mock_init,
+            entity="climate.living_room",
+            step=10,
+            state={"state": "heat", "attributes": {
+                "temperature": 21, "min_temp": 7, "max_temp": 35, "target_temp_step": 0.5
+            }}
+        )
+
+        instance._adjust_level(-1)
+
+        backend.perform_action.assert_called_once()
+        # 50% -10% -> 40% -> 7 + 0.4*28 = 18.2 -> snap to 0.5 -> 18.0
+        self.assertEqual(backend.perform_action.call_args[0][3]["temperature"], 18.0)
+
+    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
+    def test_adjust_level_climate_dynamic_range(self, mock_init):
+        """Per-entity min_temp/max_temp override the static config defaults."""
+        instance, backend = self._make_instance(
+            mock_init,
+            entity="climate.bedroom",
+            step=10,
+            state={"state": "heat", "attributes": {
+                "temperature": 20, "min_temp": 10, "max_temp": 30, "target_temp_step": 1
+            }}
+        )
+
+        instance._adjust_level(1)
+
+        backend.perform_action.assert_called_once()
+        # 20 is 50% of 10..30; +10% -> 60% -> 10 + 0.6*20 = 22.0 -> snap to 1 -> 22.0
+        self.assertEqual(backend.perform_action.call_args[0][3]["temperature"], 22.0)
+
+    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
+    def test_adjust_level_climate_step_fallback(self, mock_init):
+        """When target_temp_step is absent, the config's value_step (0.5) is used."""
+        instance, backend = self._make_instance(
+            mock_init,
+            entity="climate.living_room",
+            step=10,
+            state={"state": "heat", "attributes": {
+                "temperature": 21, "min_temp": 7, "max_temp": 35
+            }}
+        )
+
+        instance._adjust_level(1)
+
+        backend.perform_action.assert_called_once()
+        # 23.8 snapped to the 0.5 fallback step -> 24.0 (a multiple of 0.5)
+        temperature = backend.perform_action.call_args[0][3]["temperature"]
+        self.assertEqual(temperature, 24.0)
+        self.assertEqual(temperature % 0.5, 0)
+
+    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
+    def test_adjust_level_climate_heat_cool_shifts_band_cw(self, mock_init):
+        """heat_cool mode (no single setpoint) shifts the low/high band together."""
+        instance, backend = self._make_instance(
+            mock_init,
+            entity="climate.living_room",
+            step=10,
+            state={"state": "heat_cool", "attributes": {
+                "target_temp_low": 18, "target_temp_high": 24,
+                "min_temp": 7, "max_temp": 35, "target_temp_step": 0.5,
+            }}
+        )
+
+        instance._adjust_level(1)
+
+        backend.perform_action.assert_called_once()
+        args = backend.perform_action.call_args[0]
+        self.assertEqual(args[0], "climate")
+        self.assertEqual(args[1], "set_temperature")
+        # midpoint 21 (50%) +10% -> 60% -> mid 23.8; band spread 6 preserved, snapped to 0.5
+        self.assertEqual(args[3], {"target_temp_low": 21.0, "target_temp_high": 27.0})
+
+    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
+    def test_adjust_level_climate_heat_cool_shifts_band_ccw(self, mock_init):
+        """heat_cool CCW lowers the whole band, keeping its spread."""
+        instance, backend = self._make_instance(
+            mock_init,
+            entity="climate.living_room",
+            step=10,
+            state={"state": "heat_cool", "attributes": {
+                "target_temp_low": 18, "target_temp_high": 24,
+                "min_temp": 7, "max_temp": 35, "target_temp_step": 0.5,
+            }}
+        )
+
+        instance._adjust_level(-1)
+
+        backend.perform_action.assert_called_once()
+        # midpoint 21 (50%) -10% -> 40% -> mid 18.2; spread 6 -> 15.0 / 21.0
+        self.assertEqual(
+            backend.perform_action.call_args[0][3],
+            {"target_temp_low": 15.0, "target_temp_high": 21.0}
+        )
+
+    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
+    def test_adjust_level_heat_cool_band_when_temperature_also_reported(self, mock_init):
+        """heat_cool state uses the band even if a stale 'temperature' is also present."""
+        instance, backend = self._make_instance(
+            mock_init,
+            entity="climate.living_room",
+            step=10,
+            state={"state": "heat_cool", "attributes": {
+                "temperature": 21,  # stale single value some integrations still report
+                "target_temp_low": 18, "target_temp_high": 24,
+                "min_temp": 7, "max_temp": 35, "target_temp_step": 0.5,
+            }}
+        )
+
+        instance._adjust_level(1)
+
+        backend.perform_action.assert_called_once()
+        # Must send the band, NOT {"temperature": ...} which HA ignores in heat_cool
+        self.assertEqual(
+            backend.perform_action.call_args[0][3],
+            {"target_temp_low": 21.0, "target_temp_high": 27.0}
+        )
+
+    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
+    def test_adjust_level_climate_fahrenheit_display(self, mock_init):
+        """With unit=Fahrenheit the label converts °C→°F; the HA value stays native (°C)."""
+        instance, backend = self._make_instance(
+            mock_init,
+            entity="climate.living_room",
+            step=10,
+            state={"state": "heat", "attributes": {
+                "temperature": 21, "min_temp": 7, "max_temp": 35, "target_temp_step": 0.5,
+            }},
+            unit="Fahrenheit",
+        )
+
+        instance._adjust_level(1)
+
+        # HA still receives the native Celsius value
+        self.assertEqual(backend.perform_action.call_args[0][3], {"temperature": 24.0})
+        # But the dial shows Fahrenheit: 24.0°C -> 75.2°F
+        label = instance.set_center_label.call_args[0][0]
+        self.assertEqual(label, "75.2°F")
 
     @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
     def test_adjust_level_brightness_none_treated_as_zero(self, mock_init):

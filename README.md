@@ -267,19 +267,21 @@ Control Home Assistant entity levels directly from a Stream Deck Plus dial.
 - **Step size**: Percentage change per dial tick (1–50)
 - **Batch delay**: Milliseconds to wait for additional turns before sending the command (0–500)
   - Prevents flooding your network with rapid dial turns
+- **Temperature unit** (climate only): `Auto` shows Home Assistant's own unit; `Celsius`/`Fahrenheit` convert the on-dial display to that unit. The value sent to Home Assistant always stays in its native unit.
 
 **Supported Domains:**
 - **Lights**: Adjusts brightness (0–255 mapped to percentage)
 - **Fans**: Adjusts speed percentage
 - **Covers**: Adjusts position
 - **Media players**: Adjusts volume
+- **Climate (thermostats)**: Adjusts the target temperature, displaying the absolute temperature (e.g. `22°`). The range comes from the entity's own `min_temp`/`max_temp`, and values snap to its `target_temp_step`. In `heat_cool`/`auto` mode (no single setpoint) the dial shifts the whole `target_temp_low`/`target_temp_high` band, preserving its spread, and shows it as `20–24°`.
 
 **Controls:**
 - **Turn CW/CCW**: Increase/decrease level
-- **Press**: Toggle entity on/off
+- **Press**: Toggle entity on/off — for climate entities, cycles through the available fan modes instead, flashing the active mode on the dial
 
 **Behavior:**
-- Displays the target percentage immediately on each tick, before Home Assistant confirms
+- Displays the target percentage (or temperature for climate) immediately on each tick, before Home Assistant confirms
 - Batches rapid turns into a single command to avoid mesh/network flooding
 - Fine-grained 1% steps below 10% for precise low-level control
 - Shows the entity's icon from Home Assistant with color tinting (on/off)

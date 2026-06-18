@@ -17,6 +17,7 @@ except ImportError:
 
     log = logging.getLogger(__name__)
 
+from GtkHelper.GenerativeUI.ComboRow import ComboRow
 from GtkHelper.GenerativeUI.EntryRow import EntryRow
 from GtkHelper.GenerativeUI.ScaleRow import ScaleRow
 from src.backend.DeckManagement.InputIdentifier import Input
@@ -121,6 +122,163 @@ def _evaluate_customizations(state: dict, customizations: list[LevelDialCustomiz
     return icon_name, color_hex
 
 
+def _resolve_range(config: dict, state: dict) -> tuple:
+    """Resolve the effective (level_min, level_max) for a domain.
+
+    Falls back to the static config values, but reads dynamic per-entity bounds
+    from the entity attributes when the config names them (e.g. climate's
+    min_temp / max_temp).
+    """
+    attrs = state.get("attributes", {}) if state else {}
+    level_min = config["level_min"]
+    level_max = config["level_max"]
+    if config.get("level_min_attr") is not None:
+        dynamic_min = attrs.get(config["level_min_attr"])
+        if dynamic_min is not None:
+            level_min = dynamic_min
+    if config.get("level_max_attr") is not None:
+        dynamic_max = attrs.get(config["level_max_attr"])
+        if dynamic_max is not None:
+            level_max = dynamic_max
+    return level_min, level_max
+
+
+def _quantize_value(config: dict, state: dict, level_min, level_max, value):
+    """Round a native value to the domain's precision.
+
+    Domains that name a step attribute (climate's target_temp_step) snap to the
+    nearest step; otherwise preserve the historical behavior of rounding to int
+    for integer-range domains and keeping floats elsewhere.
+    """
+    if config.get("value_step_attr") is not None:
+        attrs = state.get("attributes", {}) if state else {}
+        step = attrs.get(config["value_step_attr"]) or config.get("value_step", 0.5)
+        return round(round(value / step) * step, 2)
+    if isinstance(level_max, int):
+        return round(value)
+    return value
+
+
+def _native_unit(level_max) -> str:
+    """Infer Home Assistant's native temperature unit from the entity's max temp.
+    Thermostat max temps sit well below 45 in °C and well above it in °F."""
+    try:
+        return "F" if level_max is not None and level_max >= 45 else "C"
+    except TypeError:
+        return "C"
+
+
+def _target_unit(setting_unit) -> str:
+    """Map the user's unit setting to a unit code, or None for 'follow HA'."""
+    if setting_unit == level_const.UNIT_CELSIUS:
+        return "C"
+    if setting_unit == level_const.UNIT_FAHRENHEIT:
+        return "F"
+    return None  # Auto
+
+
+def _convert_temp(value, native_unit: str, target_unit: str):
+    """Convert a temperature between °C and °F (display only); no-op when units match."""
+    if value is None or target_unit is None or native_unit == target_unit:
+        return value
+    if native_unit == "C" and target_unit == "F":
+        return round(value * 9 / 5 + 32, 1)
+    if native_unit == "F" and target_unit == "C":
+        return round((value - 32) * 5 / 9, 1)
+    return value
+
+
+def _unit_suffix(config: dict, display_unit: str) -> str:
+    """Center-label suffix: an explicit °C/°F when a unit is chosen, else the
+    config default (bare '°')."""
+    if display_unit == "C":
+        return "°C"
+    if display_unit == "F":
+        return "°F"
+    return config.get("display_suffix", "")
+
+
+def _format_level_label(config: dict, native_value, pct, native_unit=None, display_unit=None) -> str:
+    """Center-label text for a level: absolute value for display_value domains
+    (e.g. climate's "22°"), otherwise the historical percentage string."""
+    if config.get("display_value"):
+        value = _convert_temp(native_value, native_unit, display_unit)
+        return f"{value:g}{_unit_suffix(config, display_unit)}"
+    return f"{round(pct)}%"
+
+
+def _format_range_label(config: dict, low, high, native_unit=None, display_unit=None) -> str:
+    """Center-label text for a low/high band, e.g. climate heat_cool "20–24°"."""
+    low = _convert_temp(low, native_unit, display_unit)
+    high = _convert_temp(high, native_unit, display_unit)
+    return f"{low:g}–{high:g}{_unit_suffix(config, display_unit)}"
+
+
+def _range_setpoints(config: dict, state: dict):
+    """Return (low, high) target setpoints when the entity exposes a band
+    (e.g. climate heat_cool / auto), else None."""
+    attrs = state.get("attributes", {}) if state else {}
+    low_attr = config.get("range_low_attr")
+    high_attr = config.get("range_high_attr")
+    if not low_attr or not high_attr:
+        return None
+    low = attrs.get(low_attr)
+    high = attrs.get(high_attr)
+    if low is None or high is None:
+        return None
+    return low, high
+
+
+def _is_range_mode(config: dict, state: dict) -> bool:
+    """True when the entity should be controlled as a low/high band.
+
+    Triggers whenever a band is present and the entity is in one of the configured
+    range states (heat_cool / auto) — even if a stale single ``temperature`` is also
+    reported — or, as a fallback, whenever there is simply no single setpoint to use.
+    """
+    if _range_setpoints(config, state) is None:
+        return False
+    if state.get("state") in config.get("range_states", ()):
+        return True
+    return state.get("attributes", {}).get(config["level_attr"]) is None
+
+
+def _reference_value(config: dict, state: dict, level_min):
+    """Current value the percentage engine syncs from: the midpoint of a band when
+    in range mode, otherwise the single setpoint, falling back to level_min."""
+    if _is_range_mode(config, state):
+        low, high = _range_setpoints(config, state)
+        return (low + high) / 2
+    value = state.get("attributes", {}).get(config["level_attr"])
+    return value if value is not None else level_min
+
+
+def _build_setpoint_command(config: dict, state: dict, level_min, level_max, new_pct,
+                            native_unit=None, display_unit=None):
+    """Map a target percentage of [level_min, level_max] to (service_data, label).
+
+    Handles both single-setpoint entities and range-mode (heat_cool) climate
+    entities, which shift their whole band — preserving its spread. Service data is
+    always in HA's native unit; the label is converted for display only.
+    """
+    level_range = level_max - level_min
+    if _is_range_mode(config, state):
+        low, high = _range_setpoints(config, state)
+        half_spread = (high - low) / 2
+        new_mid = level_min + (new_pct / 100) * level_range
+        new_low = min(max(new_mid - half_spread, level_min), level_max)
+        new_high = min(max(new_mid + half_spread, level_min), level_max)
+        new_low = _quantize_value(config, state, level_min, level_max, new_low)
+        new_high = _quantize_value(config, state, level_min, level_max, new_high)
+        data = {config["range_low_param"]: new_low, config["range_high_param"]: new_high}
+        return data, _format_range_label(config, new_low, new_high, native_unit, display_unit)
+
+    new_value = level_min + (new_pct / 100) * level_range
+    new_value = _quantize_value(config, state, level_min, level_max, new_value)
+    return ({config["set_param"]: new_value},
+            _format_level_label(config, new_value, new_pct, native_unit, display_unit))
+
+
 class LevelDial(CustomizationCore):
     """Dial action that controls Home Assistant entity levels (brightness, fan speed, etc.)."""
 
@@ -129,6 +287,7 @@ class LevelDial(CustomizationCore):
         self.label_entry = None
         self.step_scale = None
         self.batch_delay_scale = None
+        self.unit_combo = None
         super().__init__(
             *args,
             window_implementation=LevelDialWindow,
@@ -218,6 +377,7 @@ class LevelDial(CustomizationCore):
             self.label_entry.widget,
             self.step_scale.widget,
             self.batch_delay_scale.widget,
+            self.unit_combo.widget,
             self.customization_expander.widget,
         ]
 
@@ -245,6 +405,12 @@ class LevelDial(CustomizationCore):
             title=level_const.LABEL_LEVEL_BATCH_DELAY,
             step=10, digits=0, on_change=self._reload, can_reset=False,
             complex_var_name=True
+        )
+
+        self.unit_combo: ComboRow = ComboRow(
+            self, level_const.SETTING_LEVEL_UNIT, level_const.DEFAULT_UNIT,
+            level_const.UNIT_OPTIONS, title=level_const.LABEL_LEVEL_UNIT,
+            on_change=self._reload, can_reset=False, complex_var_name=True
         )
 
     def _create_event_assigner(self) -> None:
@@ -284,7 +450,47 @@ class LevelDial(CustomizationCore):
         config = level_const.DOMAIN_CONFIGS.get(domain)
         if not config:
             return
-        self.plugin_base.backend.perform_action(domain, config["toggle_service"], entity, {})
+        # Domains that define a cycle (e.g. climate's fan modes) step to the next
+        # option on short press; the rest toggle on/off.
+        if config.get("cycle_options_attr"):
+            self._cycle_option(domain, config, entity)
+            return
+        toggle_service = config.get("toggle_service")
+        if toggle_service:
+            self.plugin_base.backend.perform_action(domain, toggle_service, entity, {})
+
+    def _cycle_option(self, domain: str, config: dict, entity: str) -> None:
+        """Advance to the next value in a cyclic attribute (e.g. climate fan mode)
+        and flash the newly selected option on the dial."""
+        state = self.plugin_base.backend.get_entity(entity)
+        if state is None:
+            return
+        attrs = state.get("attributes", {})
+        options = attrs.get(config["cycle_options_attr"]) or []
+        if not options:
+            return
+        current = attrs.get(config["cycle_attr"])
+        try:
+            index = options.index(current)
+        except ValueError:
+            index = -1
+        next_option = options[(index + 1) % len(options)]
+        self.plugin_base.backend.perform_action(
+            domain, config["cycle_service"], entity, {config["cycle_param"]: next_option}
+        )
+        self._flash_label(str(next_option))
+
+    def _flash_label(self, text: str) -> None:
+        """Briefly show text on the dial, then restore the normal display."""
+        self.set_center_label(
+            text.upper(), color=[255, 255, 255], font_size=22,
+            outline_width=3, outline_color=[0, 0, 0]
+        )
+        timer = getattr(self, "_flash_timer", None)
+        if timer is not None:
+            timer.cancel()
+        self._flash_timer = threading.Timer(1.5, self.refresh)
+        self._flash_timer.start()
 
     def _adjust_level(self, direction: int) -> None:
         entity = self.settings.get_entity()
@@ -301,14 +507,15 @@ class LevelDial(CustomizationCore):
             return
 
         step = self.settings.get_step()
-        level_range = config["level_max"] - config["level_min"]
+        level_min, level_max = _resolve_range(config, state)
+        level_range = level_max - level_min
 
         # Work in percentage space to avoid rounding accumulation.
         # Use pending percentage if we have one, otherwise convert from HA state.
         pending_pct = getattr(self, "_pending_pct", None)
         if pending_pct is None:
-            reported = state.get("attributes", {}).get(config["level_attr"], 0) or 0
-            pending_pct = (reported - config["level_min"]) / level_range * 100
+            reported = _reference_value(config, state, level_min)
+            pending_pct = (reported - level_min) / level_range * 100 if level_range else 0
 
         # Fine-grained 1% steps in the bottom 10%, or when a full step
         # down would cross into the bottom 10%
@@ -319,20 +526,21 @@ class LevelDial(CustomizationCore):
         new_pct = max(1, min(100, pending_pct + (effective_step * direction)))
         self._pending_pct = new_pct
 
-        # Convert to native value for the HA command
-        new_value = config["level_min"] + (new_pct / 100) * level_range
-        if isinstance(config["level_max"], int):
-            new_value = round(new_value)
+        # Convert to native HA service data (handles single setpoint vs heat_cool band)
+        native_unit, display_unit = self._units(config, level_max)
+        service_data, display_text = _build_setpoint_command(
+            config, state, level_min, level_max, new_pct, native_unit, display_unit
+        )
 
         # Update the display immediately so the user sees feedback
         self.set_center_label(
-            f"{round(new_pct)}%", color=[255, 255, 255], font_size=28,
-            outline_width=3, outline_color=[0, 0, 0]
+            display_text, color=[255, 255, 255],
+            font_size=28, outline_width=3, outline_color=[0, 0, 0]
         )
 
         # Debounce the HA command — cancel any pending timer, start a new one
         batch_delay = self.settings.get_batch_delay()
-        self._pending_command = (domain, config["set_service"], entity, {config["set_param"]: new_value})
+        self._pending_command = (domain, config["set_service"], entity, service_data)
 
         timer = getattr(self, "_batch_timer", None)
         if timer is not None:
@@ -355,6 +563,15 @@ class LevelDial(CustomizationCore):
         self._batch_timer = None
         domain, service, entity, params = cmd
         self.plugin_base.backend.perform_action(domain, service, entity, params)
+
+    def _units(self, config: dict, level_max):
+        """Return (native_unit, display_unit) for temperature domains, else (None, None).
+
+        display_unit is None for the 'Auto' setting (show HA's value as-is).
+        """
+        if not config.get("is_temperature"):
+            return None, None
+        return _native_unit(level_max), _target_unit(self.settings.get_unit())
 
     def refresh(self, state: dict = None) -> None:
         if not self.initialized:
@@ -400,11 +617,15 @@ class LevelDial(CustomizationCore):
         # Default icon from entity state, with domain-appropriate fallback
         default_icon = _get_entity_icon(state, config["fallback_icon"])
 
-        # State & level
+        # State & level — a range-mode entity (heat_cool) has no single setpoint
+        # but is still "on" as long as it exposes a low/high band.
         entity_state = state.get("state", "off")
         level = state.get("attributes", {}).get(config["level_attr"])
+        setpoints = _range_setpoints(config, state)
+        is_off = entity_state in ("off", "unavailable", "unknown")
+        has_value = level is not None or setpoints is not None
 
-        if entity_state in ("off", "unavailable", "unknown") or level is None:
+        if is_off or not has_value:
             default_color = level_const.COLOR_OFF
         else:
             default_color = level_const.COLOR_ON
@@ -415,18 +636,25 @@ class LevelDial(CustomizationCore):
             state, customizations, default_icon, default_color
         )
 
-        if entity_state in ("off", "unavailable", "unknown") or level is None:
+        if is_off or not has_value:
             self.set_center_label(
                 "Off", color=[100, 100, 100], font_size=28,
                 outline_width=3, outline_color=[0, 0, 0]
             )
             icon_img = _get_icon_image(icon_name, color_hex, opacity=0.85)
         else:
-            level_range = config["level_max"] - config["level_min"]
-            pct = round((level - config["level_min"]) / level_range * 100)
+            level_min, level_max = _resolve_range(config, state)
+            native_unit, display_unit = self._units(config, level_max)
+            if level is not None:
+                level_range = level_max - level_min
+                pct = round((level - level_min) / level_range * 100) if level_range else 0
+                center_text = _format_level_label(config, level, pct, native_unit, display_unit)
+            else:
+                low, high = setpoints
+                center_text = _format_range_label(config, low, high, native_unit, display_unit)
             self.set_center_label(
-                f"{pct}%", color=[255, 255, 255], font_size=28,
-                outline_width=3, outline_color=[0, 0, 0]
+                center_text, color=[255, 255, 255],
+                font_size=28, outline_width=3, outline_color=[0, 0, 0]
             )
             icon_img = _get_icon_image(icon_name, color_hex, opacity=0.75)
 
@@ -443,6 +671,9 @@ class LevelDial(CustomizationCore):
         entity = self.settings.get_entity()
         has_entity = bool(domain) and bool(entity)
 
+        # The temperature unit only applies to climate-style (temperature) domains.
+        is_temp = bool(level_const.DOMAIN_CONFIGS.get(domain, {}).get("is_temperature"))
+
         if not has_entity:
             self.label_entry.widget.set_sensitive(False)
             self.step_scale.widget.set_sensitive(False)
@@ -453,12 +684,14 @@ class LevelDial(CustomizationCore):
             self.batch_delay_scale.widget.set_subtitle(
                 self.lm.get(level_const.LABEL_LEVEL_NO_ENTITY)
             )
+            self.unit_combo.widget.set_sensitive(False)
         else:
             self.label_entry.widget.set_sensitive(True)
             self.step_scale.widget.set_sensitive(True)
             self.step_scale.widget.set_subtitle(level_const.EMPTY_STRING)
             self.batch_delay_scale.widget.set_sensitive(True)
             self.batch_delay_scale.widget.set_subtitle(level_const.EMPTY_STRING)
+            self.unit_combo.widget.set_sensitive(is_temp)
 
     @requires_initialization
     def _get_domains(self) -> list[str]:

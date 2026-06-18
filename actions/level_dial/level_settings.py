@@ -11,6 +11,7 @@ DEFAULT_SETTINGS = {
     level_const.SETTING_STEP: level_const.DEFAULT_STEP,
     level_const.SETTING_LABEL: level_const.DEFAULT_LABEL,
     level_const.SETTING_BATCH_DELAY: level_const.DEFAULT_BATCH_DELAY,
+    level_const.SETTING_UNIT: level_const.DEFAULT_UNIT,
     customization_const.SETTING_CUSTOMIZATIONS: []
 }
 
@@ -39,10 +40,16 @@ class LevelDialSettings(CustomizationSettings):
             level_const.SETTING_BATCH_DELAY, level_const.DEFAULT_BATCH_DELAY
         )
 
+    def get_unit(self) -> str:
+        return self._action.get_settings()[level_const.SETTING_LEVEL].get(
+            level_const.SETTING_UNIT, level_const.DEFAULT_UNIT
+        )
+
     def reset(self, domain: str) -> None:
         super().reset(domain)
         settings = self._action.get_settings()
         settings[level_const.SETTING_LEVEL][level_const.SETTING_STEP] = level_const.DEFAULT_STEP
         settings[level_const.SETTING_LEVEL][level_const.SETTING_LABEL] = level_const.DEFAULT_LABEL
         settings[level_const.SETTING_LEVEL][level_const.SETTING_BATCH_DELAY] = level_const.DEFAULT_BATCH_DELAY
+        settings[level_const.SETTING_LEVEL][level_const.SETTING_UNIT] = level_const.DEFAULT_UNIT
         self._action.set_settings(settings)

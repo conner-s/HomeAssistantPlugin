@@ -129,3 +129,73 @@ class TestLevelDialShortUp(unittest.TestCase):
         instance._on_dial_short_up()
 
         backend_mock.perform_action.assert_called_once_with("cover", "toggle", "cover.garage", {})
+
+    def _make_climate_instance(self, entity, state):
+        """Helper to create a LevelDial for climate cycle tests (flash stubbed out)."""
+        settings_mock = Mock()
+        settings_mock.get_entity = Mock(return_value=entity)
+
+        backend_mock = Mock()
+        backend_mock.get_entity = Mock(return_value=state)
+
+        plugin_base_mock = Mock()
+        plugin_base_mock.backend = backend_mock
+
+        instance = LevelDial()
+        instance.initialized = True
+        instance.settings = settings_mock
+        instance.plugin_base = plugin_base_mock
+        instance._flash_label = Mock()  # avoid starting a real threading.Timer
+        return instance, backend_mock
+
+    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
+    def test_short_up_climate_cycles_fan_mode(self, _):
+        instance, backend_mock = self._make_climate_instance(
+            "climate.living_room",
+            {"attributes": {"fan_mode": "low", "fan_modes": ["low", "medium", "high"]}}
+        )
+
+        instance._on_dial_short_up()
+
+        backend_mock.perform_action.assert_called_once_with(
+            "climate", "set_fan_mode", "climate.living_room", {"fan_mode": "medium"}
+        )
+        instance._flash_label.assert_called_once_with("medium")
+
+    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
+    def test_short_up_climate_fan_mode_wraps_around(self, _):
+        instance, backend_mock = self._make_climate_instance(
+            "climate.living_room",
+            {"attributes": {"fan_mode": "high", "fan_modes": ["low", "medium", "high"]}}
+        )
+
+        instance._on_dial_short_up()
+
+        backend_mock.perform_action.assert_called_once_with(
+            "climate", "set_fan_mode", "climate.living_room", {"fan_mode": "low"}
+        )
+
+    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
+    def test_short_up_climate_unknown_mode_starts_at_first(self, _):
+        instance, backend_mock = self._make_climate_instance(
+            "climate.living_room",
+            {"attributes": {"fan_mode": None, "fan_modes": ["low", "medium", "high"]}}
+        )
+
+        instance._on_dial_short_up()
+
+        backend_mock.perform_action.assert_called_once_with(
+            "climate", "set_fan_mode", "climate.living_room", {"fan_mode": "low"}
+        )
+
+    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
+    def test_short_up_climate_no_fan_modes_is_noop(self, _):
+        instance, backend_mock = self._make_climate_instance(
+            "climate.living_room",
+            {"attributes": {"temperature": 21}}
+        )
+
+        instance._on_dial_short_up()
+
+        backend_mock.perform_action.assert_not_called()
+        instance._flash_label.assert_not_called()
