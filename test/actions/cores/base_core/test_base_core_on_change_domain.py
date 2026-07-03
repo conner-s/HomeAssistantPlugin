@@ -58,6 +58,7 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
 
         entity_combo_mock = Mock()
         entity_combo_mock.remove_all_items = remove_all_items_mock
+        entity_combo_mock.get_n_items = Mock(return_value=0)
 
         domain = "light"
 
@@ -89,6 +90,7 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
 
         entity_combo_mock = Mock()
         entity_combo_mock.remove_all_items = remove_all_items_mock
+        entity_combo_mock.get_n_items = Mock(return_value=0)
 
         domain = "light"
 
@@ -120,6 +122,7 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
 
         entity_combo_mock = Mock()
         entity_combo_mock.remove_all_items = remove_all_items_mock
+        entity_combo_mock.get_n_items = Mock(return_value=0)
 
         domain = None
 
@@ -151,6 +154,7 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
 
         entity_combo_mock = Mock()
         entity_combo_mock.remove_all_items = remove_all_items_mock
+        entity_combo_mock.get_n_items = Mock(return_value=0)
 
         domain = "light"
 
@@ -180,6 +184,7 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
         settings_mock.reset = Mock()
 
         entity_combo_mock = Mock()
+        entity_combo_mock.get_n_items = Mock(return_value=0)
 
         instance = BaseCore(Mock(), True)
         instance.initialized = True

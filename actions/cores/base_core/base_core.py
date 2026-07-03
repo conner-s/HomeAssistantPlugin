@@ -118,10 +118,7 @@ class BaseCore(ActionCore):
                 self.plugin_base.backend.remove_tracked_entity(entity, self.refresh)
             self.settings.reset(domain)
             # save entities from the combo to a temporary variable to keep them alive while we clear the combo
-            try:
-                _temp_keep_alive = [self.entity_combo.get_item(i) for i in range(self.entity_combo.get_n_items())]
-            except TypeError:
-                _temp_keep_alive = []
+            _temp_keep_alive = [self.entity_combo.get_item(i) for i in range(self.entity_combo.get_n_items())]
             self.entity_combo.remove_all_items()
             # now the entities can be removed
             del _temp_keep_alive
