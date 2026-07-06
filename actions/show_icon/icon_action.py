@@ -2,6 +2,16 @@
 The module for the Home Assistant action that is loaded in StreamController.
 """
 
+import os
+
+import gi
+
+gi.require_version("Gtk", "4.0")
+from gi.repository import Gio
+from gi.repository.Gtk import Align, Button, FileDialog, FileFilter
+
+from loguru import logger as log
+
 from HomeAssistantPlugin.actions.cores.base_core.base_core import requires_initialization
 from HomeAssistantPlugin.actions.cores.customization_core.customization_core import CustomizationCore
 from HomeAssistantPlugin.actions.show_icon import icon_const, icon_helper
@@ -43,6 +53,11 @@ class ShowIcon(CustomizationCore):
             complex_var_name=True
         )
 
+        browse_button = Button(label=self.lm.get(icon_const.LABEL_ICON_BROWSE))
+        browse_button.set_valign(Align.CENTER)
+        browse_button.connect("clicked", self._on_browse_clicked)
+        self.icon.widget.add_suffix(browse_button)
+
         self.color: ColorButtonRow = ColorButtonRow(
             self, icon_const.SETTING_ICON_COLOR, icon_const.DEFAULT_ICON_COLOR,
             title=icon_const.LABEL_ICON_COLOR, on_change=self._reload,
@@ -62,6 +77,7 @@ class ShowIcon(CustomizationCore):
             title=icon_const.LABEL_ICON_OPACITY, step=1, digits=0, on_change=self._reload,
             can_reset=False, complex_var_name=True
         )
+
 
     @requires_initialization
     def set_enabled_disabled(self) -> None:
@@ -87,17 +103,22 @@ class ShowIcon(CustomizationCore):
 
             self.opacity.widget.set_sensitive(False)
             self.opacity.widget.set_subtitle(self.lm.get(icon_const.LABEL_ICON_NO_ENTITY))
+
         else:
+            icon_value = self.settings.get_icon()
+            has_icon = bool(icon_value) and icon_value in icon_helper.MDI_ICONS
+            not_supported = self.lm.get(icon_const.LABEL_ICON_ONLY_SUPPORTED_FOR_ICONS) if not has_icon else icon_const.EMPTY_STRING
+
             self.icon.widget.set_sensitive(True)
 
-            self.color.widget.set_sensitive(True)
-            self.color.widget.set_subtitle(icon_const.EMPTY_STRING)
+            self.color.widget.set_sensitive(has_icon)
+            self.color.widget.set_subtitle(not_supported)
 
             self.scale.widget.set_sensitive(True)
             self.scale.widget.set_subtitle(icon_const.EMPTY_STRING)
 
-            self.opacity.widget.set_sensitive(True)
-            self.opacity.widget.set_subtitle(icon_const.EMPTY_STRING)
+            self.opacity.widget.set_sensitive(has_icon)
+            self.opacity.widget.set_subtitle(not_supported)
 
     def refresh(self, state: dict = None) -> None:
         """
@@ -122,6 +143,37 @@ class ShowIcon(CustomizationCore):
 
         self._load_customizations()
         self.set_enabled_disabled()
+
+    def _on_browse_clicked(self, *_) -> None:
+        dialog = FileDialog()
+        dialog.set_title(self.lm.get(icon_const.LABEL_ICON_IMAGE))
+
+        filter_images = FileFilter()
+        filter_images.set_name("Images")
+        for mime in ("image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"):
+            filter_images.add_mime_type(mime)
+
+        filters = Gio.ListStore.new(FileFilter)
+        filters.append(filter_images)
+        dialog.set_filters(filters)
+        dialog.set_default_filter(filter_images)
+
+        current_path = self.icon.widget.get_text()
+        if current_path:
+            current_dir = os.path.dirname(current_path)
+            if os.path.isdir(current_dir):
+                dialog.set_initial_folder(Gio.File.new_for_path(current_dir))
+
+        dialog.open(None, None, self._on_file_chosen)
+
+    def _on_file_chosen(self, dialog, result) -> None:
+        try:
+            file = dialog.open_finish(result)
+            if file:
+                self.icon.widget.set_text(file.get_path())
+                self._reload()
+        except Exception as e:
+            log.error(f"Error choosing file: {e}")
 
     def _get_domains(self) -> list[str]:
         """This class needs all domains that provide actions in Home Assistant."""

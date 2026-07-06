@@ -1,8 +1,10 @@
 """The module for the Home Assistant action that is loaded in StreamController."""
 
 import gi
-from GtkHelper.GenerativeUI.ComboRow import ComboRow
 from HomeAssistantPlugin.actions import const
+from HomeAssistantPlugin.actions.cores.base_core.migrate import migrate_settings
+
+from GtkHelper.GenerativeUI.ComboRow import ComboRow
 from src.backend.PluginManager.ActionCore import ActionCore
 
 gi.require_version('Gtk', '4.0')
@@ -48,6 +50,7 @@ class BaseCore(ActionCore):
 
     def on_ready(self) -> None:
         """Set up action when StreamController has finished loading."""
+        migrate_settings(self)
         self.settings = self.settings_implementation(self)
         self.initialized = True
 
@@ -114,7 +117,11 @@ class BaseCore(ActionCore):
             if entity and self.track_entity:
                 self.plugin_base.backend.remove_tracked_entity(entity, self.refresh)
             self.settings.reset(domain)
+            # save entities from the combo to a temporary variable to keep them alive while we clear the combo
+            _temp_keep_alive = [self.entity_combo.get_item(i) for i in range(self.entity_combo.get_n_items())]
             self.entity_combo.remove_all_items()
+            # now the entities can be removed
+            del _temp_keep_alive
             self._last_loaded_entities = None
 
         if domain:
