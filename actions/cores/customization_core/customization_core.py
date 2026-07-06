@@ -19,6 +19,9 @@ class CustomizationCore(BaseCore):
     def __init__(self, window_implementation, customization_implementation, row_implementation, *args, **kwargs):
         # Must be set before create_ui_elements in BaseCore is called
         self.customization_expander = None
+        # Flag set during on_remove() to prevent _load_customizations() from
+        # adding child widgets to the expander while it is detached from the UI.
+        self._clearing = False
         super().__init__(*args, **kwargs)
         self.window_implementation = window_implementation
         self.customization_implementation = customization_implementation
@@ -132,7 +135,25 @@ class CustomizationCore(BaseCore):
         attributes.extend(list(ha_entity.get(customization_const.ATTRIBUTES, {}).keys()))
         return attributes
 
+    @requires_initialization
+    def on_remove(self) -> None:
+        """Clean up after action was removed.
+
+        Prevents _load_customizations() from modifying the customization
+        expander while it is being detached from the UI, which would corrupt
+        GTK's internal widget-tree state and cause a crash on the next
+        navigation back to this page.
+        """
+        self._clearing = True
+        try:
+            super().on_remove()
+        finally:
+            self.customization_expander.clear_rows()
+            self._clearing = False
+
     def _load_customizations(self) -> None:
+        if self._clearing:
+            return
         self.customization_expander.clear_rows()
         attributes = self._get_attributes()
         state = self.plugin_base.backend.get_entity(self.settings.get_entity())
