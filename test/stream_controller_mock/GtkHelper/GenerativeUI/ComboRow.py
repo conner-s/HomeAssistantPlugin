@@ -20,6 +20,9 @@ class ComboRow:
     def get_item_amount(self) -> int:
         return len(self.args[3])
 
+    def get_item_at(self, index: int):
+        return self.args[3][index]
+
     @property
     def widget(self):
         return self._widget
