@@ -320,6 +320,7 @@ class TestCustomizationCore(unittest.TestCase):
     def test_load_customizations(self):
         instance = CustomizationCore.__new__(CustomizationCore)
         instance.customization_expander = Mock()
+        instance._clearing = False
         instance._get_attributes = Mock()
         instance._get_attributes.return_value = ["attr1", "attr2"]
         instance.plugin_base = Mock()
@@ -348,3 +349,72 @@ class TestCustomizationCore(unittest.TestCase):
         delete_connect_mock.assert_has_calls([call(base_const.CONNECT_CLICKED, instance._on_delete_customization, 0), call(base_const.CONNECT_CLICKED, instance._on_delete_customization, 1)])
         up_connect_mock.assert_has_calls([call(base_const.CONNECT_CLICKED, instance._on_move_up, 0), call(base_const.CONNECT_CLICKED, instance._on_move_up, 1)])
         down_connect_mock.assert_has_calls([call(base_const.CONNECT_CLICKED, instance._on_move_down, 0), call(base_const.CONNECT_CLICKED, instance._on_move_down, 1)])
+
+    def test_load_customizations_skipped_while_clearing(self):
+        instance = CustomizationCore.__new__(CustomizationCore)
+        instance.customization_expander = Mock()
+        instance._clearing = True
+
+        instance._load_customizations()
+
+        instance.customization_expander.clear_rows.assert_not_called()
+
+    @patch('HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.on_remove')
+    def test_on_remove_clears_expander_and_resets_flag(self, super_on_remove_mock):
+        instance = CustomizationCore.__new__(CustomizationCore)
+        instance.initialized = True
+        instance._clearing = False
+        instance.customization_expander = Mock()
+
+        instance.on_remove()
+
+        super_on_remove_mock.assert_called_once()
+        instance.customization_expander.clear_rows.assert_called_once()
+        self.assertFalse(instance._clearing)
+
+    @patch('HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.on_remove')
+    def test_on_remove_sets_clearing_flag_during_super_call(self, super_on_remove_mock):
+        """_clearing must be True when super().on_remove() runs so that any
+        refresh() call triggered by the base class skips _load_customizations()."""
+        instance = CustomizationCore.__new__(CustomizationCore)
+        instance.initialized = True
+        instance._clearing = False
+        instance.customization_expander = Mock()
+
+        flag_during_super = []
+
+        def capture_flag():
+            flag_during_super.append(instance._clearing)
+
+        super_on_remove_mock.side_effect = capture_flag
+
+        instance.on_remove()
+
+        self.assertTrue(flag_during_super[0])
+        self.assertFalse(instance._clearing)
+
+    @patch('HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.on_remove')
+    def test_on_remove_clears_expander_even_when_super_raises(self, super_on_remove_mock):
+        instance = CustomizationCore.__new__(CustomizationCore)
+        instance.initialized = True
+        instance._clearing = False
+        instance.customization_expander = Mock()
+        super_on_remove_mock.side_effect = RuntimeError("boom")
+
+        with self.assertRaises(RuntimeError):
+            instance.on_remove()
+
+        instance.customization_expander.clear_rows.assert_called_once()
+        self.assertFalse(instance._clearing)
+
+    def test_on_remove_not_initialized(self):
+        instance = CustomizationCore.__new__(CustomizationCore)
+        instance.initialized = False
+        instance._clearing = False
+        instance.customization_expander = Mock()
+
+        result = instance.on_remove()
+
+        self.assertIsNone(result)
+        instance.customization_expander.clear_rows.assert_not_called()
+        self.assertFalse(instance._clearing)
